@@ -147,7 +147,7 @@ function clearInk() {
   if (status) status.textContent = "Draw a kanji, then click Recognize.";
 }
 
-const HW_ENDPOINT = "https://minireader.zoe-caudron.workers.dev/handwrite";
+const HW_ENDPOINT = (window.TSUNDOKU_CONFIG?.handwriteEndpoint || "https://minireader.zoe-caudron.workers.dev/handwrite");
 
 // --- Handwriting recognition (proxied via Worker) ---
 async function recognizeHandwriting() {

@@ -1,30 +1,24 @@
 /* =========================
    THEME TOKENS (3 THEMES)
+   Minimal: no shadows, no fills
 ========================= */
 
 /* Default: Flowers */
 :root {
-  /* palette */
-  --bg: #F7F4D5;
-  --accent: #839958;
-  --accent-2: #D3968C;
-  --ink: #0A3323;
+  --bg: #EDF2D4;
+  --accent: #CAC4F6;
+  --accent-2: #667F60;
+  --ink: #4B4A3E;
 
-  /* derived */
-  --surface: color-mix(in srgb, white 70%, var(--bg));
-  --surface-2: color-mix(in srgb, white 55%, var(--bg));
-  --border: color-mix(in srgb, var(--ink) 18%, transparent);
-  --muted: color-mix(in srgb, var(--ink) 60%, transparent);
+  /* strokes */
+  --border: color-mix(in srgb, var(--ink) 22%, transparent);
+  --border-strong: color-mix(in srgb, var(--ink) 40%, transparent);
+  --accent-stroke: color-mix(in srgb, var(--accent) 70%, var(--border));
+  --accent2-stroke: color-mix(in srgb, var(--accent-2) 70%, var(--border));
 
   /* shapes */
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 26px;
+  --radius-box: 25px;
   --radius-pill: 999px;
-
-  /* shadows */
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.05);
-  --shadow-md: 0 10px 30px rgba(0,0,0,0.05);
 
   /* focus ring */
   --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);
@@ -37,30 +31,27 @@
   --accent-2: #DBF48C;
   --ink: #3C183C;
 
-  --surface: color-mix(in srgb, #fff4a5 70%, white);
-  --surface-2: color-mix(in srgb, #fff4a5 55%, white);
-  --border: rgba(0,0,0,0.14);
-  --muted: rgba(0,0,0,0.55);
-  --ring: 0 0 0 3px rgba(255,165,200,0.45);
+  --border: rgba(0,0,0,0.18);
+  --border-strong: rgba(0,0,0,0.28);
+  --accent-stroke: rgba(255,165,200,0.85);
+  --accent2-stroke: rgba(160,186,0,0.85);
+  --ring: 0 0 0 3px rgba(255,165,200,0.40);
 }
 
 /* Plum */
 :root[data-theme="plum"] {
-  --bg: #EED4D1;
+   --bg: #EED4D1;
   --accent: #432033;
   --accent-2: #976D90;
   --ink: #323C31;
 
-  --surface: color-mix(in srgb, #5B1E32 80%, black);
-  --surface-2: color-mix(in srgb, #5B1E32 65%, black);
   --border: rgba(244,238,242,0.18);
-  --muted: rgba(244,238,242,0.65);
-  --ring: 0 0 0 3px rgba(175,99,132,0.45);
+  --border-strong: rgba(244,238,242,0.28);
+  --accent-stroke: rgba(175,99,132,0.95);
+  --accent2-stroke: rgba(102,95,118,0.95);
+  --ring: 0 0 0 3px rgba(175,99,132,0.40);
 }
 
-/* =========================
-   GLOBAL BASE
-========================= */
 * { box-sizing: border-box; }
 
 body {
@@ -69,19 +60,6 @@ body {
   background: var(--bg);
   min-height: 100vh;
   font-family: 'Crimson Pro', serif;
-}
-
-/* soft paper lighting */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 20% 15%, rgba(255,255,255,0.25), transparent 40%),
-    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.18), transparent 45%),
-    radial-gradient(circle at 40% 85%, rgba(255,255,255,0.16), transparent 50%);
-  opacity: 0.7;
 }
 
 /* =========================
@@ -96,9 +74,8 @@ body::before{
   justify-content:space-between;
   gap: 16px;
   padding: 14px 20px;
-  background: color-mix(in srgb, var(--surface) 75%, transparent);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(10px);
+  background: var(--bg);                 /* no fill layers */
+  border-bottom: 2px solid var(--border-strong);
 }
 
 .topbar h1{
@@ -109,11 +86,6 @@ body::before{
   font-size: 1.25rem;
 }
 
-.topbar .heart{
-  font-weight: 400;
-  opacity: 0.85;
-}
-
 .topbar-right{
   display:flex;
   align-items:center;
@@ -122,52 +94,71 @@ body::before{
 
 .tagline{
   font-size: 0.9rem;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--ink) 65%, transparent);
   font-style: italic;
   white-space: nowrap;
 }
 
-.theme-dots{
-  display:flex;
-  gap: 8px;
-  align-items:center;
-}
+.theme-dots{ display:flex; gap: 8px; align-items:center; }
 
 .theme-dot{
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--dot);
+  border: 2px solid var(--border);
+  background: var(--dot); /* tiny dot is allowed */
   cursor: pointer;
-  box-shadow: 0 0 0 2px color-mix(in srgb, white 65%, transparent);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease, border-color 0.12s ease;
 }
-
 .theme-dot:hover{ transform: translateY(-1px) scale(1.06); }
-.theme-dot.active{
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);
-}
+.theme-dot.active{ border-color: var(--accent-stroke); }
 
 /* =========================
-   SHARED UI (ROUNDED)
+   MINIMAL UI (no shadows, no fills)
 ========================= */
 .card{
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-box);
+  box-shadow: none !important;
+}
+
+canvas{
+  border-radius: var(--radius-box);
+  border: 2px solid var(--border);
+  background: transparent;
 }
 
 input, textarea, select{
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  border-radius: var(--radius-box);
+  border: 2px solid var(--border);
+  background: transparent;
   color: var(--ink);
 }
 
-button, .btn{ border-radius: var(--radius-pill); }
+button, .btn{
+  border-radius: var(--radius-pill);
+  background: transparent !important;
+  box-shadow: none !important;
+}
 
+/* Buttons: stroke-only */
+.btn{
+  border: 2px solid var(--accent2-stroke);
+  color: var(--ink);
+}
+
+.btn:hover{ border-color: var(--accent-stroke); }
+.btn:active{ transform: translateY(1px); }
+
+.btn-outline{
+  border: 2px solid var(--border);
+  color: var(--ink);
+}
+
+.btn-outline:hover{ border-color: var(--border-strong); }
+
+/* Focus ring */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -176,51 +167,25 @@ select:focus-visible{
   box-shadow: var(--ring);
 }
 
-/* Primary button */
-.btn{
-  background: var(--accent-2);
-  color: color-mix(in srgb, var(--ink) 12%, white);
-  border: 1px solid color-mix(in srgb, var(--accent-2) 65%, var(--border));
-  box-shadow: var(--shadow-sm);
-}
-
-.btn:hover{ filter: brightness(1.03); }
-.btn:active{ transform: translateY(1px); }
-
-/* Outline button */
-.btn-outline{
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--ink);
-  box-shadow: none;
-}
-
-.btn-outline:hover{
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-}
-
-/* Make tables/canvas consistent */
-canvas{
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
-}
-
+/* Tables */
 .words-table th{
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  background: transparent;
+  border: 2px solid var(--border);
+}
+.words-table td{
   border: 1px solid var(--border);
+  background: transparent;
 }
 
-.words-table td{
-  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
-}
+/* Remove any global shadows/backdrops from original CSS */
+.card, .fc-card-face, .fc-results-stat { box-shadow: none !important; }
 
 
 /* =========================
    ORIGINAL STYLES BELOW
 ========================= */
 
-/*:root {
+:root {
     --ink: #1a1410;
     --paper: #f5f0e8;
     --aged: #e8dfc8;
@@ -229,7 +194,7 @@ canvas{
     --muted: #7a6e60;
     --border: #c8b89a;
     --white: #faf8f4;
-  }*/
+  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -238,16 +203,18 @@ canvas{
   color: var(--ink);
   min-height: 100vh;
 
-  /*background-image:
-    url("./assets/test.png"),
+  background-color: var(--paper);
+  background-image:
+    url("./assets/paper-tile.png"),
     repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
   background-repeat: repeat, repeat;
   background-size: 240px 240px, auto;
-  background-blend-mode: normal;*/
+  background-blend-mode: normal;
 }
 
   header {
-   
+    background: var(--ink);
+    color: var(--paper);
     padding: 18px 32px;
     display: flex;
     align-items: center;
@@ -268,7 +235,7 @@ canvas{
   }
 
   nav {
-  
+    background: var(--aged);
     display: flex;
     border-bottom: 2px solid var(--border);
     padding: 0 24px;
@@ -282,14 +249,14 @@ canvas{
     font-size: 1rem;
     padding: 12px 20px;
     cursor: pointer;
-   
+    color: var(--muted);
     border-bottom: 3px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s;
     letter-spacing: 0.05em;
   }
   nav button.active {
-   
+    color: var(--red);
     border-bottom-color: var(--red);
     font-weight: 600;
   }
@@ -301,7 +268,7 @@ canvas{
   .panel.active { display: block; }
 
   .card {
-   
+    background: var(--white);
     border: 1px solid var(--border);
     border-radius: 2px;
     padding: 22px;
@@ -313,7 +280,7 @@ canvas{
     font-weight: 400;
     letter-spacing: 0.2em;
     text-transform: uppercase;
- 
+    color: var(--muted);
     margin-bottom: 16px;
     border-bottom: 1px solid var(--border);
     padding-bottom: 8px;
@@ -353,7 +320,7 @@ canvas{
     font-size: 1.2rem;
     padding: 8px 12px;
     border: 1px solid var(--border);
-  
+    background: var(--paper);
     color: var(--ink);
     border-radius: 2px;
     outline: none;
@@ -840,3 +807,10 @@ canvas{
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--aged); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+
+/* =========================
+   Minimal overrides (ensure)
+========================= */
+.fc-card-face, .fc-results-stat { box-shadow: none !important; }
+.fc-front, .fc-back { background: transparent !important; border: 2px solid var(--border) !important; color: var(--ink) !important; }

@@ -7,7 +7,7 @@ document.getElementById('search-input').addEventListener('keydown', e => {
 });
 
 // Your minireader worker:
-const JISHO_ENDPOINT = "https://minireader.zoe-caudron.workers.dev/?keyword=";
+const JISHO_ENDPOINT = "https://jisho.org/api/v1/search/words?keyword=";
 
 async function lookupWord() {
   const q = document.getElementById('search-input').value.trim();
