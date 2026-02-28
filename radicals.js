@@ -242,3 +242,7 @@ window.radicalSearchWord = radicalSearchWord;
 window.radicalClearAll = radicalClearAll;
 
 document.addEventListener('DOMContentLoaded', ()=>{ try{ renderRadicals(); }catch(e){console.error(e);} });
+
+document.addEventListener("DOMContentLoaded", () => {
+  try { renderRadicals(); } catch (e) { console.error("renderRadicals failed", e); }
+});
