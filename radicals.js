@@ -80,19 +80,22 @@ function clearRadicals() {
 
 async function searchByRadicals() {
   if (!selectedRadicals.size) { alert('Select at least one radical.'); return; }
-  const q = '#radical:' + [...selectedRadicals].join('');
+
+  const rad = [...selectedRadicals].join('');
   const res = document.getElementById('radical-results');
   res.innerHTML = '<p class="status-msg">Searching…</p>';
+
   try {
-    const r = await fetch(JISHO_ENDPOINT + encodeURIComponent(q));
+    const r = await fetch(RADICAL_ENDPOINT + encodeURIComponent(rad));
     if (!r.ok) throw new Error("HTTP " + r.status);
     const data = await r.json();
-    renderRadicalResults(data.data || []);
-  } catch(e) {
-    res.innerHTML = `<p class="status-msg">Search on Jisho:
-      <a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noopener" style="color:var(--red)">
-        ${escapeHTML([...selectedRadicals].join(''))} ↗
-      </a></p>`;
+    renderRadicalKanjiResults(data.kanji || []);
+  } catch (e) {
+    // Fallback: open Jisho in a new tab for radical search
+    const q = '#radical:' + rad;
+    res.innerHTML = `<p class="status-msg">Could not fetch radical results.
+      <a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noopener" style="color:var(--red)">Try on Jisho ↗</a>
+    </p>`;
   }
 }
 
@@ -132,6 +135,43 @@ function renderRadicalResults(entries) {
   res.innerHTML = '';
   res.appendChild(wrap);
 
+  const p = document.createElement('p');
+  p.style.cssText = "font-size:0.8rem;color:var(--muted);margin-top:10px;font-style:italic";
+  p.innerHTML = `Click any kanji to look it up. <a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noopener" style="color:var(--red)">See all on Jisho ↗</a>`;
+  res.appendChild(p);
+}
+
+
+function renderRadicalKanjiResults(kanjiList) {
+  const res = document.getElementById('radical-results');
+  const rad = [...selectedRadicals].join('');
+
+  if (!kanjiList || !kanjiList.length) {
+    const q = '#radical:' + rad;
+    res.innerHTML = `<p class="status-msg">No results returned.
+      <a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noopener" style="color:var(--red)">Try on Jisho ↗</a></p>`;
+    return;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px';
+
+  kanjiList.slice(0, 60).forEach(k => {
+    const tile = document.createElement('div');
+    tile.style.cssText = "background:var(--white);border:1px solid var(--border);border-radius:2px;padding:8px 12px;cursor:pointer;min-width:70px;text-align:center";
+    tile.innerHTML = `<div style="font-family:'Noto Serif JP',serif;font-size:1.5rem;font-weight:700">${escapeHTML(k)}</div>`;
+    tile.addEventListener('click', () => {
+      document.getElementById('search-input').value = k;
+      showPanel('lookup');
+      lookupWord();
+    });
+    wrap.appendChild(tile);
+  });
+
+  res.innerHTML = '';
+  res.appendChild(wrap);
+
+  const q = '#radical:' + rad;
   const p = document.createElement('p');
   p.style.cssText = "font-size:0.8rem;color:var(--muted);margin-top:10px;font-style:italic";
   p.innerHTML = `Click any kanji to look it up. <a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noopener" style="color:var(--red)">See all on Jisho ↗</a>`;

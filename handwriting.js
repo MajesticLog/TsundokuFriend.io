@@ -178,7 +178,7 @@ async function recognizeHandwriting() {
 
   try {
     const r = await fetch(
-      "https://inputtools.google.com/request?itc=ja-t-i0-handwrit&app=translate",
+      HANDWRITE_ENDPOINT,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
