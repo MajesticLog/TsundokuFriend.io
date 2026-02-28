@@ -238,12 +238,12 @@ canvas{
   color: var(--ink);
   min-height: 100vh;
 
-  background-image:
+  /*background-image:
     url("./assets/test.png"),
     repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
   background-repeat: repeat, repeat;
   background-size: 240px 240px, auto;
-  background-blend-mode: normal;
+  background-blend-mode: normal;*/
 }
 
   header {
