@@ -5,6 +5,7 @@
 ========================= */
 
 let element2kanji = null;
+let usingFallback = false;
 
 // Minimal fallback so it works immediately even without the big JSON.
 const ELEMENT2KANJI_FALLBACK = {
@@ -24,6 +25,7 @@ async function loadElementIndex() {
     element2kanji = await r.json();
   } catch {
     element2kanji = ELEMENT2KANJI_FALLBACK;
+    usingFallback = true;
   }
   return element2kanji;
 }
@@ -105,6 +107,13 @@ async function searchByRadicals() {
   if (res) res.innerHTML = '<p class="status-msg">Searching…</p>';
 
   const idx = await loadElementIndex();
+
+  if (usingFallback) {
+    const note = document.createElement('div');
+    note.className = 'status-msg';
+    note.innerHTML = '⚠️ Full radical index not found. Add <code>data/element2kanji.json</code> for complete results.';
+    if (res) { res.innerHTML = ''; res.appendChild(note); }
+  }
   const parts = [...selectedRadicals];
 
   let set = new Set(idx[parts[0]] || []);

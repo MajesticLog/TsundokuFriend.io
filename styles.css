@@ -18,11 +18,11 @@
 
   background-color: var(--paper);
   background-image:
-    url("./assets/test.png"),
+    url("./assets/paper-tile.png"),
     repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
   background-repeat: repeat, repeat;
-  background-size: 320px 320px, auto;
-  background-blend-mode: multiply;
+  background-size: 240px 240px, auto;
+  background-blend-mode: normal;
 }
 
   header {

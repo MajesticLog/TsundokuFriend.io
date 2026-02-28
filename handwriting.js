@@ -168,10 +168,11 @@ async function recognizeHandwriting() {
   const ink = usable.map(st => ([
     st.map(p => Math.round(p.x)),
     st.map(p => Math.round(p.y)),
+    st.map(p => Math.round(p.t || 0)),
   ]));
 
   const payload = JSON.stringify([
-    "ja",
+    "ja-t-i0-handwrit",
     [canvas.width, canvas.height],
     ink,
     0,
