@@ -147,7 +147,9 @@ function clearInk() {
   if (status) status.textContent = "Draw a kanji, then click Recognize.";
 }
 
-// --- Handwriting recognition (Google Input Tools) ---
+const HW_ENDPOINT = "https://minireader.zoe-caudron.workers.dev/handwrite";
+
+// --- Handwriting recognition (proxied via Worker) ---
 async function recognizeHandwriting() {
   const status = document.getElementById("hw-status");
   const out = document.getElementById("hw-candidates");
@@ -177,8 +179,7 @@ async function recognizeHandwriting() {
   ]);
 
   try {
-    const r = await fetch(
-      HANDWRITE_ENDPOINT,
+    const r = await fetch(HW_ENDPOINT,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

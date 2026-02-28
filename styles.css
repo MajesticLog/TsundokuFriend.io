@@ -12,13 +12,18 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Crimson Pro', serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100vh;
-    background-image:
-      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
-  }
+  font-family: 'Crimson Pro', serif;
+  color: var(--ink);
+  min-height: 100vh;
+
+  background-color: var(--paper);
+  background-image:
+    url("./assets/paper-tile.png"),
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
+  background-repeat: repeat, repeat;
+  background-size: 320px 320px, auto;
+  background-blend-mode: multiply;
+}
 
   header {
     background: var(--ink);
