@@ -15,7 +15,7 @@ async function loadElementIndex() {
   if (element2kanji) return element2kanji;
   if (elementIndexLoadError) throw elementIndexLoadError;
 
-  const url = new URL("data/element2kanji.json", window.location.href).toString();
+  const ELEMENT2KANJI_URL = "data/element2kanji.json"; // NO leading slash
   try {
     const r = await fetch(url, { cache: "no-store" });
     if (!r.ok) throw new Error(`Could not load element2kanji.json (HTTP ${r.status})`);
