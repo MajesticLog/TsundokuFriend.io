@@ -24,7 +24,9 @@ function hwGetBrush() {
 
 function hwNowMs() { return Math.round(performance.now()); }
 
-function hwInit() {
+function hwInit(){
+  try {
+
   Object.keys(hw).forEach(k => {
     const slot = +k;
     const st = hw[slot];
@@ -54,7 +56,10 @@ function hwInit() {
 
   hwResizeAll();
   window.addEventListener("resize", hwResizeAll);
-  // If panel is hidden at load (display:none), resize once after first paint
+  
+  setTimeout(hwResizeAll,0);
+  } catch(e){ console.error(e); }
+// If panel is hidden at load (display:none), resize once after first paint
   setTimeout(hwResizeAll, 0);
 }
 
@@ -65,24 +70,13 @@ function hwResizeAll() {
     if (!st.canvas) return;
 
     const wrap = st.canvas.parentElement;
-    // If the panel is hidden (display:none), clientWidth will be 0 — skip resize
-    const availWidth = wrap ? wrap.clientWidth : 0;
-    if (availWidth < 10) return; // panel not visible yet, skip
-
-    const w = Math.min(availWidth - 24, 520);
-    const newW = Math.max(280, w);
-    const newH = Math.round(newW * 0.75);
-
-    // Only resize if dimensions actually changed (avoids clearing on redundant calls)
-    if (st.canvas.width === newW && st.canvas.height === newH) {
-      hwDrawGuide(slot);
-      return;
-    }
-
+    const w = Math.min((wrap ? wrap.clientWidth : 480) - 24, 520);
     const old = st.canvas.toDataURL();
-    st.canvas.width = newW;
-    st.canvas.height = newH;
 
+    st.canvas.width = Math.max(280, w);
+    st.canvas.height = Math.round(st.canvas.width * 0.75);
+
+    // restore previous drawing
     const img = new Image();
     img.onload = () => {
       st.ctx.drawImage(img, 0, 0, st.canvas.width, st.canvas.height);
@@ -365,3 +359,5 @@ window.hwClear = hwClear;
 window.hwRecognize = hwRecognize;
 window.hwLookup = hwLookup;
 window.hwClearQuery = hwClearQuery;
+
+document.addEventListener('DOMContentLoaded', hwInit);

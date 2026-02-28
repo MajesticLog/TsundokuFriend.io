@@ -21,10 +21,7 @@ function showPanel(id, btn) {
   // panel hooks (guarded so one failure doesn't kill the app)
   try { if (id === 'lists' && typeof renderBookList === 'function') renderBookList(); } catch(e) { console.error(e); }
   try { if (id === 'radicals' && typeof renderRadicals === 'function') renderRadicals(); } catch(e) { console.error(e); }
-  try { if (id === 'writing' && typeof hwResizeAll === 'function') {
-    // Use requestAnimationFrame so display:block has taken effect before we measure clientWidth
-    requestAnimationFrame(() => requestAnimationFrame(hwResizeAll));
-  } } catch(e) { console.error(e); }
+  try { if (id === 'writing' && typeof hwResizeAll === 'function') setTimeout(hwResizeAll, 0); } catch(e) { console.error(e); }
 
   try {
     if (id === 'flashcards') {
@@ -40,3 +37,16 @@ function showPanel(id, btn) {
 }
 
 window.showPanel = showPanel;
+
+
+function initNav(){
+  document.querySelectorAll('nav button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const onclick = btn.getAttribute('onclick') || '';
+      // If inline onclick exists, it will still run; but we prefer data-panel if present.
+      const m = onclick.match(/showPanel\('([a-z]+)'/);
+      if (m) showPanel(m[1], btn);
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', initNav);

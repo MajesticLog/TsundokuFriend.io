@@ -262,8 +262,24 @@ select:focus-visible{
 
   main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
 
-  .panel { display: none; }
-  .panel.active { display: block; }
+  .panel{
+  display:block;
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease, transform 180ms ease, max-height 220ms ease;
+  pointer-events:none;
+}
+
+  .panel.active{
+  max-height:5000px;
+  overflow:visible;
+  opacity:1;
+  transform: translateY(0);
+  pointer-events:auto;
+}
+
 
   .card {
     background: var(--white);
@@ -950,17 +966,17 @@ nav button{
 nav button:hover { transform: translateY(-1px); }
 nav button.active { border-color: var(--accent-stroke) !important; }
 
-/* Panels: hidden panels use display:none so canvas events are never blocked */
+/* Panels: soft slide/opacity without shadows */
 .panel{
-  display: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
 }
 .panel.active{
-  display: block;
-  animation: panelIn 180ms ease both;
-}
-@keyframes panelIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* Buttons (pill) micro interaction */
@@ -990,4 +1006,31 @@ nav button.active { border-color: var(--accent-stroke) !important; }
   pointer-events: auto !important;
   touch-action: none !important;
   cursor: crosshair;
+}
+
+
+/* =========================
+   Panel visibility (keep measurable for canvases)
+========================= */
+.panel{
+  display:block !important;
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease, transform 180ms ease, max-height 220ms ease;
+  pointer-events:none;
+}
+.panel.active{
+  max-height:5000px;
+  overflow:visible;
+  opacity:1;
+  transform: translateY(0);
+  pointer-events:auto;
+}
+
+/* Ensure canvases are interactive */
+canvas{
+  pointer-events:auto !important;
+  touch-action:none !important;
 }
