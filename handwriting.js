@@ -172,7 +172,7 @@ async function recognizeHandwriting() {
   ]));
 
   const payload = JSON.stringify([
-    "ja-t-i0-handwrit",
+    "ja",
     [canvas.width, canvas.height],
     ink,
     0,
