@@ -22,25 +22,29 @@ if (document.readyState === "loading") {
   initApp();
 }
 
+
+
+// =========================
+// Theme dots (Flowers / Joyful / Plum)
+// =========================
 function applyTheme(theme) {
   const t = (theme || "flowers").toLowerCase();
-  if (t === "flowers") {
-    document.documentElement.removeAttribute("data-theme");
-  } else {
-    document.documentElement.setAttribute("data-theme", t);
-  }
+  if (t === "flowers") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+
   localStorage.setItem("tsundoku-theme", t);
+
+  document.querySelectorAll(".theme-dot").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.theme === t);
+  });
 }
 
-function initThemeUI() {
-  const select = document.getElementById("themeSelect");
+function initThemeDots() {
   const saved = localStorage.getItem("tsundoku-theme") || "flowers";
   applyTheme(saved);
-  if (select) {
-    select.value = saved;
-    select.addEventListener("change", () => applyTheme(select.value));
-  }
+
+  document.querySelectorAll(".theme-dot").forEach(btn => {
+    btn.addEventListener("click", () => applyTheme(btn.dataset.theme));
+  });
 }
-
-document.addEventListener("DOMContentLoaded", initThemeUI);
-
+document.addEventListener("DOMContentLoaded", initThemeDots);

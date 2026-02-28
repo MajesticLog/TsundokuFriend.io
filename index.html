@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>積読フレンド ♥ — Japanese Reading Companion</title>
+<title>読書手帳 — Japanese Reading Companion</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
@@ -13,20 +13,23 @@
 </head>
 
 <body>
-<header>
-  <div class="theme-switch">
-  <select id="themeSelect" aria-label="Theme">
-    <option value="flowers">Flowers</option>
-    <option value="joyful">Joyful</option>
-    <option value="plum">Plum</option>
-  </select>
-</div>
-  .theme-switch select {
-  padding: 8px 12px;
-  border-radius: var(--radius-pill);
-}
-  <div><h1>積読フレンド ♥</h1></div>
-  <span>Japanese Reading Companion</span>
+<header class="topbar">
+  <div class="topbar-left">
+    <h1>積読フレンド <span class="heart">♡</span></h1>
+  </div>
+
+  <div class="topbar-right">
+    <span class="tagline">Japanese Reading Companion</span>
+
+    <div class="theme-dots" aria-label="Theme">
+      <button class="theme-dot" type="button" data-theme="flowers" aria-label="Flowers theme"
+        title="Flowers" style="--dot:#CAC4F6"></button>
+      <button class="theme-dot" type="button" data-theme="joyful" aria-label="Joyful theme"
+        title="Joyful" style="--dot:#ffa5c8"></button>
+      <button class="theme-dot" type="button" data-theme="plum" aria-label="Plum theme"
+        title="Plum" style="--dot:#AF6384"></button>
+    </div>
+  </div>
 </header>
 
 <nav>
