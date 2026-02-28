@@ -54,6 +54,8 @@ function hwInit() {
 
   hwResizeAll();
   window.addEventListener("resize", hwResizeAll);
+  // If panel is hidden at load (display:none), resize once after first paint
+  setTimeout(hwResizeAll, 0);
 }
 
 function hwResizeAll() {
