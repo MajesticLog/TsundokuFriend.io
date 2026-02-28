@@ -26,10 +26,10 @@
 
 /* Joyful */
 :root[data-theme="joyful"] {
-  --bg: #FEF8F0;
-  --accent: #8CA7F4;
-  --accent-2: #DBF48C;
-  --ink: #3C183C;
+  --bg: #ffe6f1;
+  --accent: #ffa5c8;
+  --accent-2: #a0ba00;
+  --ink: #2a2a2a;
 
   --border: rgba(0,0,0,0.18);
   --border-strong: rgba(0,0,0,0.28);
@@ -40,10 +40,10 @@
 
 /* Plum */
 :root[data-theme="plum"] {
-   --bg: #EED4D1;
-  --accent: #432033;
-  --accent-2: #976D90;
-  --ink: #323C31;
+  --bg: #351E28;
+  --accent: #AF6384;
+  --accent-2: #665F76;
+  --ink: #F4EEF2;
 
   --border: rgba(244,238,242,0.18);
   --border-strong: rgba(244,238,242,0.28);
@@ -204,9 +204,7 @@ select:focus-visible{
   min-height: 100vh;
 
   background-color: var(--paper);
-  background-image:
-    url("./assets/paper-tile.png"),
-    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.04) 27px, rgba(0,0,0,0.04) 28px);
+  background: var(--bg);
   background-repeat: repeat, repeat;
   background-size: 240px 240px, auto;
   background-blend-mode: normal;
@@ -814,3 +812,174 @@ select:focus-visible{
 ========================= */
 .fc-card-face, .fc-results-stat { box-shadow: none !important; }
 .fc-front, .fc-back { background: transparent !important; border: 2px solid var(--border) !important; color: var(--ink) !important; }
+
+
+/* =========================
+   Remove fills & shadows from panel/nav buttons
+========================= */
+.nav button,
+.panel-tabs button,
+.tab-button,
+button {
+  box-shadow: none !important;
+}
+
+.nav button,
+.panel-tabs button,
+.tab-button {
+  background: transparent !important;
+  border: 2px solid var(--border) !important;
+  color: var(--ink) !important;
+}
+
+.nav button.active,
+.panel-tabs button.active,
+.tab-button.active {
+  border-color: var(--accent-stroke) !important;
+}
+
+
+/* =========================
+   Filled header + theme dots
+========================= */
+.topbar {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.topbar h1,
+.topbar .tagline {
+  color: var(--ink);
+}
+
+.theme-dot {
+  background: var(--dot) !important;
+  border: 2px solid var(--ink);
+}
+
+
+
+/* =========================
+   Candidates / multi-kanji builders
+========================= */
+.candidate-row{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.candidate-row button{
+  padding:6px 12px;
+  border-radius:999px;
+  border:2px solid var(--border);
+  background:transparent;
+  cursor:pointer;
+}
+
+.candidate-row button:hover{
+  border-color: var(--accent-stroke);
+}
+
+.writing-layout.writing-two{
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 980px){
+  .writing-layout.writing-two{
+    grid-template-columns: 1fr;
+  }
+}
+
+.hw-build{
+  grid-column: 1 / -1;
+}
+
+/* mini entries list */
+.mini-row{
+  display:grid;
+  grid-template-columns: 120px 120px 1fr;
+  gap:10px;
+  padding:10px 0;
+  border-top:2px solid var(--border);
+  cursor:pointer;
+}
+.mini-row:first-child{ border-top:0; }
+.mini-k{ font-family:'Noto Serif JP',serif; font-size:1.4rem; font-weight:700; }
+.mini-r{ font-family:'Noto Serif JP',serif; color:var(--muted); }
+.mini-m{ color:var(--ink); }
+@media (max-width:700px){
+  .mini-row{ grid-template-columns: 90px 1fr; }
+  .mini-m{ grid-column:1 / -1; }
+}
+
+
+/* =========================
+   Refinements: thinner strokes, stationery vibe, micro-animations
+========================= */
+
+/* stroke system */
+:root {
+  --stroke: 1.5px;
+  --stroke-strong: 2px;
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 14px;
+}
+
+/* Typography tweaks */
+h1, h2, h3 { letter-spacing: 0.04em; }
+.topbar h1 { font-weight: 500 !important; }
+.tagline { font-weight: 400; }
+
+/* Remove any residual shadows/fills */
+* { box-shadow: none !important; }
+.card, .fc-card-face, .fc-results-stat { background: transparent !important; }
+
+/* Border hierarchy */
+.card, canvas, input, textarea, select { border-width: var(--stroke) !important; }
+.topbar { border-bottom-width: var(--stroke-strong) !important; }
+nav { border-bottom-width: var(--stroke) !important; }
+
+/* Nav / panel buttons: minimal + animated */
+nav button{
+  transition: transform 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  border-width: var(--stroke) !important;
+  background: transparent !important;
+}
+nav button:hover { transform: translateY(-1px); }
+nav button.active { border-color: var(--accent-stroke) !important; }
+
+/* Panels: soft slide/opacity without shadows */
+.panel{
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+.panel.active{
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Buttons (pill) micro interaction */
+.btn, .btn-outline{
+  transition: transform 120ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
+  border-width: var(--stroke) !important;
+}
+.btn:hover, .btn-outline:hover{ transform: translateY(-1px); }
+
+/* Stationery vibe: subtle “ink” treatment */
+.meanings { line-height: 1.6; }
+.status-msg { color: var(--muted); }
+.jlpt-badge{
+  border: var(--stroke) solid var(--accent-stroke);
+  background: transparent !important;
+  color: var(--ink) !important;
+}
+
+/* Header fill (keep minimal but filled) */
+.topbar{
+  background: var(--accent) !important;
+}

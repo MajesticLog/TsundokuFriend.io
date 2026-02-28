@@ -1,38 +1,35 @@
 /* =========================
-   RADICAL / COMPONENT SEARCH
-   - Local component->kanji index (KanjiVG-style)
-   - Works on GitHub Pages (no scraping/CORS)
+   RADICAL / COMPONENT SEARCH (element2kanji.json)
+   - Uses local data/element2kanji.json (fast + stable on GitHub Pages)
+   - Build multi-kanji query by clicking candidates
+   - Suggest words via Jisho based on current query
 ========================= */
 
+const JISHO_API_R = (window.TSUNDOKU_CONFIG && window.TSUNDOKU_CONFIG.jishoApi) || "https://jisho.org/api/v1/search/words?keyword=";
+
 let element2kanji = null;
-let usingFallback = false;
+let elementIndexLoadError = null;
 
-// Minimal fallback so it works immediately even without the big JSON.
-const ELEMENT2KANJI_FALLBACK = {
-  "一": ["一","丁","七","万","丈","三","上","下","不","世","丘","丙","中","主","二","井","亜","亡","交","京","亭","人","今"],
-  "口": ["口","古","句","各","名","吾","告","和","品","員","問","味","唱","商","喜","器","国","園","困","回","因","固","囲"],
-  "水": ["水","永","求","汐","汁","江","池","決","汽","河","泉","泊","泣","法","波","泥","注","泳","洋","洗","海","消","流","涙","湖","港","湯","漢","潮"],
-  "木": ["木","本","末","未","札","机","村","林","枚","果","枝","松","板","校","根","植","楽","森","様","樹"],
-  "人": ["人","仁","今","仏","仕","他","代","令","位","住","体","何","作","使","例","供","依","信","側","像"],
-  "艹": ["花","草","茶","英","若","苦","荷","菜","菓","落","葉","蒸","薬","薄","藍"]
-};
-
+// Load element2kanji.json from the repo.
+// IMPORTANT: Put the file at: /data/element2kanji.json (same level as index.html)
 async function loadElementIndex() {
   if (element2kanji) return element2kanji;
+  if (elementIndexLoadError) throw elementIndexLoadError;
+
+  const url = new URL("./data/element2kanji.json", window.location.href).toString();
+
   try {
-    const r = await fetch("./data/element2kanji.json", { cache: "force-cache" });
-    if (!r.ok) throw new Error("missing");
+    const r = await fetch(url, { cache: "no-store" });
+    if (!r.ok) throw new Error(`Could not load element2kanji.json (HTTP ${r.status})`);
     element2kanji = await r.json();
-  } catch {
-    element2kanji = ELEMENT2KANJI_FALLBACK;
-    usingFallback = true;
+    return element2kanji;
+  } catch (e) {
+    elementIndexLoadError = e;
+    throw e;
   }
-  return element2kanji;
 }
 
-let strokeFilter = null;
-
-// Picker list (includes a small extra: 艹)
+/* Radical list (subset; extend if you want) */
 const RADICALS = [
   {r:'一',s:1},{r:'丨',s:1},{r:'丶',s:1},{r:'ノ',s:1},{r:'乙',s:1},{r:'亅',s:1},
   {r:'二',s:2},{r:'亠',s:2},{r:'人',s:2},{r:'儿',s:2},{r:'入',s:2},{r:'八',s:2},{r:'冂',s:2},{r:'冖',s:2},{r:'冫',s:2},{r:'几',s:2},{r:'凵',s:2},{r:'刀',s:2},{r:'力',s:2},{r:'勹',s:2},{r:'匕',s:2},{r:'匚',s:2},{r:'十',s:2},{r:'卜',s:2},{r:'卩',s:2},{r:'厂',s:2},{r:'厶',s:2},{r:'又',s:2},
@@ -40,9 +37,52 @@ const RADICALS = [
   {r:'心',s:4},{r:'手',s:4},{r:'文',s:4},{r:'日',s:4},{r:'月',s:4},{r:'木',s:4},{r:'止',s:4},{r:'水',s:4},{r:'火',s:4},{r:'犬',s:4},{r:'王',s:4},{r:'艹',s:4},
 ];
 
-const strokeCounts = [...new Set(RADICALS.map(x => x.s))].sort((a,b)=>a-b);
+const strokeCounts = [...new Set(RADICALS.map(r => r.s))].sort((a,b)=>a-b);
+let strokeFilter = null;
+
+function ensureRadicalQueryUI() {
+  // Adds (if missing) a query input for building multi-kanji words
+  const host = document.getElementById("panel-radicals");
+  if (!host) return;
+
+  if (!document.getElementById("radical-query")) {
+    const rightCard = host.querySelector(".radical-layout .card:nth-child(2)");
+    if (rightCard) {
+      const block = document.createElement("div");
+      block.style.marginBottom = "12px";
+      block.innerHTML = `
+        <label style="display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px">Build word</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="radical-query" type="text" placeholder="Click kanji candidates to build a word…" style="flex:1;min-width:220px;padding:10px 12px;">
+          <button class="btn btn-sm" id="radical-lookup-btn" type="button">Search</button>
+          <button class="btn btn-sm btn-outline" id="radical-clear-btn" type="button">Clear</button>
+        </div>
+        <div id="radical-suggest" style="margin-top:10px"></div>
+      `;
+      rightCard.insertBefore(block, rightCard.children[1] || null);
+
+      document.getElementById("radical-lookup-btn")?.addEventListener("click", () => {
+        const q = document.getElementById("radical-query").value.trim();
+        if (q) {
+          document.getElementById("search-input").value = q;
+          showPanel("lookup");
+          lookupWord(q);
+        }
+      });
+      document.getElementById("radical-clear-btn")?.addEventListener("click", () => {
+        document.getElementById("radical-query").value = "";
+        renderWordSuggestions("", "radical-suggest");
+      });
+      document.getElementById("radical-query")?.addEventListener("input", (e) => {
+        renderWordSuggestions(e.target.value, "radical-suggest");
+      });
+    }
+  }
+}
 
 function renderRadicals() {
+  ensureRadicalQueryUI();
+
   const sf = document.getElementById('stroke-filter');
   if (!sf) return;
 
@@ -72,6 +112,7 @@ function highlightStroke(el) {
 function renderRadicalGrid() {
   const grid = document.getElementById('radical-grid');
   if (!grid) return;
+
   grid.innerHTML = '';
   const filtered = strokeFilter ? RADICALS.filter(r => r.s === strokeFilter) : RADICALS;
 
@@ -95,35 +136,42 @@ function toggleRadical(r, btn) {
 function clearRadicals() {
   selectedRadicals.clear();
   renderRadicalGrid();
-  const disp = document.getElementById('selected-radicals-display');
-  if (disp) disp.textContent = '—';
-  const res = document.getElementById('radical-results');
-  if (res) res.innerHTML = '<p class="status-msg">Select radicals/components and click Search.</p>';
+  document.getElementById('selected-radicals-display').textContent = '—';
+  document.getElementById('radical-results').innerHTML = '<p class="status-msg">Select radicals/components and click Search.</p>';
 }
 
 async function searchByRadicals() {
+  if (!selectedRadicals.size) { alert('Select at least one radical/component.'); return; }
   const res = document.getElementById('radical-results');
-  if (!selectedRadicals.size) { alert('Select at least one part.'); return; }
-  if (res) res.innerHTML = '<p class="status-msg">Searching…</p>';
+  if (res) res.innerHTML = '<p class="status-msg">Loading index…</p>';
 
-  const idx = await loadElementIndex();
-
-  if (usingFallback) {
-    const note = document.createElement('div');
-    note.className = 'status-msg';
-    note.innerHTML = '⚠️ Full radical index not found. Add <code>data/element2kanji.json</code> for complete results.';
-    if (res) { res.innerHTML = ''; res.appendChild(note); }
+  let idx;
+  try {
+    idx = await loadElementIndex();
+  } catch (e) {
+    if (res) {
+      res.innerHTML = `<p class="status-msg">⚠️ Could not load <code>data/element2kanji.json</code>.<br>
+      Put it in your repo at <code>/data/element2kanji.json</code> and confirm it opens in the browser.</p>`;
+    }
+    return;
   }
-  const parts = [...selectedRadicals];
 
+  const parts = [...selectedRadicals];
   let set = new Set(idx[parts[0]] || []);
   for (let i = 1; i < parts.length; i++) {
     const next = new Set(idx[parts[i]] || []);
     set = new Set([...set].filter(k => next.has(k)));
   }
 
-  const chars = [...set].slice(0, 180);
+  const chars = [...set].slice(0, 240);
   renderKanjiCandidates(chars);
+}
+
+function appendToRadicalQuery(kanji) {
+  const inp = document.getElementById("radical-query");
+  if (!inp) return;
+  inp.value = (inp.value || "") + kanji;
+  renderWordSuggestions(inp.value, "radical-suggest");
 }
 
 function renderKanjiCandidates(chars) {
@@ -131,7 +179,7 @@ function renderKanjiCandidates(chars) {
   if (!res) return;
 
   if (!chars.length) {
-    res.innerHTML = '<p class="status-msg">No candidates. Try fewer/different parts (or use handwriting).</p>';
+    res.innerHTML = '<p class="status-msg">No candidates. Try fewer/different parts (or handwriting).</p>';
     return;
   }
 
@@ -139,10 +187,50 @@ function renderKanjiCandidates(chars) {
     <div style="display:flex;flex-wrap:wrap;gap:6px">
       ${chars.map(k => `
         <button class="btn btn-sm btn-outline"
-          style="font-family:'Noto Serif JP',serif;font-size:1.2rem"
-          onclick="document.getElementById('search-input').value='${k}'; showPanel('lookup'); lookupWord();">${k}</button>
+          style="font-family:'Noto Serif JP',serif;font-size:1.15rem"
+          onclick="appendToRadicalQuery('${k}')">${k}</button>
       `).join('')}
     </div>
-    <p class="status-msg" style="margin-top:8px">Showing ${Math.min(chars.length,180)} candidates.</p>
+    <p class="status-msg" style="margin-top:10px">Click candidates to build a multi-kanji word.</p>
   `;
+}
+
+/* Suggestions: show words based on current query */
+async function renderWordSuggestions(query, targetId) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+
+  const q = (query || "").trim();
+  if (!q) { el.innerHTML = ""; return; }
+
+  el.innerHTML = '<p class="status-msg">Suggestions…</p>';
+  try {
+    const r = await fetch(JISHO_API_R + encodeURIComponent(q));
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const entries = (data.data || []).slice(0, 6);
+
+    if (!entries.length) { el.innerHTML = '<p class="status-msg">No suggestions.</p>'; return; }
+
+    el.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${entries.map(e => {
+          const w = e.japanese[0]?.word || e.japanese[0]?.reading || '';
+          const rd = e.japanese[0]?.reading || '';
+          const m = e.senses[0]?.english_definitions?.slice(0,2).join('; ') || '';
+          return `<button class="btn btn-sm btn-outline" style="text-align:left"
+            onclick="document.getElementById('search-input').value='${w}'; showPanel('lookup'); lookupWord('${w}')">
+            <span style="font-family:'Noto Serif JP',serif;font-weight:600">${w}</span>
+            <span style="opacity:0.7;margin-left:8px">${w!==rd?rd:''}</span>
+            <span style="opacity:0.75;margin-left:10px">— ${escapeHtml(m)}</span>
+          </button>`;
+        }).join('')}
+      </div>`;
+  } catch {
+    el.innerHTML = '<p class="status-msg">Could not load suggestions.</p>';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }

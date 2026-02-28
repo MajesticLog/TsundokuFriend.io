@@ -1,7 +1,7 @@
 /* =========================
    NAV
 ========================= */
-function showPanel(id, btnEl = null) {
+function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
@@ -24,8 +24,6 @@ function showPanel(id, btnEl = null) {
     showFlashcardsSetup();
   }
   if (id === 'writing') {
-    // ensure canvas fits card when tab opens
-    resizeCanvas();
-    clearCanvas(false); // keep ink by default
+    if (typeof hwResizeAll === 'function') hwResizeAll();
   }
 }

@@ -2,18 +2,12 @@
    INIT
 ========================= */
 
-window.addEventListener('resize', resizeCanvas);
-
 function initApp() {
-  // Canvas + UI
-  resizeCanvas();
-  clearCanvas(true);
+  // Handwriting canvases
+  if (typeof hwInit === "function") hwInit();
 
   // Books panel
-  renderBookList();
-
-  // Flashcards setup (if user opens tab)
-  // no-op here; nav.js will call showFlashcardsSetup when needed
+  if (typeof renderBookList === "function") renderBookList();
 }
 
 if (document.readyState === "loading") {
@@ -21,8 +15,6 @@ if (document.readyState === "loading") {
 } else {
   initApp();
 }
-
-
 
 // =========================
 // Theme dots (Flowers / Joyful / Plum)
@@ -47,4 +39,5 @@ function initThemeDots() {
     btn.addEventListener("click", () => applyTheme(btn.dataset.theme));
   });
 }
+
 document.addEventListener("DOMContentLoaded", initThemeDots);

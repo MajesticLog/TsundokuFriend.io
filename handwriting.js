@@ -1,220 +1,354 @@
 /* =========================
-   HANDWRITING + CANVAS
-   - Drawing canvas
-   - Stroke capture
-   - Recognize via Google Input Tools
+   HANDWRITING (2 canvases)
+   - Drawing + stroke capture
+   - Recognition via Google Input Tools (through your worker)
+   - Builds a multi-kanji query + suggests words via Jisho
 ========================= */
 
-// Canvas + drawing state (globals because HTML uses onclick handlers)
-const canvas = document.getElementById('writing-canvas');
-const ctx = canvas.getContext('2d');
+const HW_ENDPOINT = (window.TSUNDOKU_CONFIG && window.TSUNDOKU_CONFIG.handwriteEndpoint) || "";
+const JISHO_API = (window.TSUNDOKU_CONFIG && window.TSUNDOKU_CONFIG.jishoApi) || "https://jisho.org/api/v1/search/words?keyword=";
 
-let drawing = false;
-let mode = 'draw';
-let lastX = 0, lastY = 0;
+const hw = {
+  1: { canvasId: "writing-canvas-1", candidatesId: "hw-candidates-1", statusId: "hw-status-1" },
+  2: { canvasId: "writing-canvas-2", candidatesId: "hw-candidates-2", statusId: "hw-status-2" },
+};
 
-// Strokes for handwriting recognition
-let strokes = [];
-let currentStroke = null;
-
-function nowMs() { return performance.now(); }
-
-function getPos(e) {
-  const r = canvas.getBoundingClientRect();
-  const src = e.touches ? e.touches[0] : e;
-  return [src.clientX - r.left, src.clientY - r.top];
+function hwGetBrush() {
+  const sizeEl = document.getElementById("brush-size");
+  const colorEl = document.getElementById("brush-color");
+  return {
+    size: sizeEl ? (+sizeEl.value || 10) : 10,
+    color: colorEl ? (colorEl.value || "#1a1410") : "#1a1410",
+  };
 }
 
-function drawGrid() {
-  const w = canvas.width, h = canvas.height;
+function hwNowMs() { return Math.round(performance.now()); }
+
+function hwInit() {
+  Object.keys(hw).forEach(k => {
+    const slot = +k;
+    const st = hw[slot];
+    st.canvas = document.getElementById(st.canvasId);
+    if (!st.canvas) return;
+    st.ctx = st.canvas.getContext("2d");
+    st.drawing = false;
+    st.lastX = 0;
+    st.lastY = 0;
+    st.strokes = [];
+    st.currentStroke = null;
+
+    // Mouse
+    st.canvas.addEventListener("mousedown", (e) => hwStart(slot, e));
+    window.addEventListener("mouseup", () => hwEnd(slot));
+    st.canvas.addEventListener("mousemove", (e) => hwMove(slot, e));
+
+    // Touch
+    st.canvas.addEventListener("touchstart", (e) => hwStart(slot, e), { passive: false });
+    st.canvas.addEventListener("touchend", () => hwEnd(slot));
+    st.canvas.addEventListener("touchmove", (e) => hwMove(slot, e), { passive: false });
+  });
+
+  // Query live suggestions
+  const q = document.getElementById("hw-query");
+  if (q) q.addEventListener("input", () => hwSuggest());
+
+  hwResizeAll();
+  window.addEventListener("resize", hwResizeAll);
+}
+
+function hwResizeAll() {
+  Object.keys(hw).forEach(k => {
+    const slot = +k;
+    const st = hw[slot];
+    if (!st.canvas) return;
+
+    const wrap = st.canvas.parentElement;
+    const w = Math.min((wrap ? wrap.clientWidth : 480) - 24, 520);
+    const old = st.canvas.toDataURL();
+
+    st.canvas.width = Math.max(280, w);
+    st.canvas.height = Math.round(st.canvas.width * 0.75);
+
+    // restore previous drawing
+    const img = new Image();
+    img.onload = () => {
+      st.ctx.drawImage(img, 0, 0, st.canvas.width, st.canvas.height);
+      hwDrawGuide(slot);
+    };
+    img.src = old;
+
+    hwDrawGuide(slot);
+  });
+}
+
+function hwDrawGuide(slot) {
+  const st = hw[slot];
+  if (!st || !st.ctx) return;
+  const ctx = st.ctx;
+  const w = st.canvas.width, h = st.canvas.height;
   ctx.save();
-  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-  ctx.lineWidth = 0.5;
-  ctx.setLineDash([4,4]);
+  ctx.globalCompositeOperation = "destination-over";
+  ctx.strokeStyle = "rgba(0,0,0,0.08)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 6]);
   ctx.beginPath();
-  ctx.moveTo(w/2,0); ctx.lineTo(w/2,h);
-  ctx.moveTo(0,h/2); ctx.lineTo(w,h/2);
-  ctx.moveTo(0,0); ctx.lineTo(w,h);
-  ctx.moveTo(w,0); ctx.lineTo(0,h);
+  ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+  ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.restore();
 }
 
-function clearCanvas(keepGrid = true) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (keepGrid) drawGrid();
+function hwPos(st, e) {
+  const r = st.canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return [src.clientX - r.left, src.clientY - r.top];
 }
 
-function resizeCanvas() {
-  // Make it responsive but keep reasonable limits
-  const wrap = canvas.parentElement;
-  const w = Math.max(280, Math.min((wrap?.clientWidth || 480) - 44, 520));
-  const prev = { w: canvas.width, h: canvas.height };
-
-  // If we resize, we lose drawing. We intentionally clear to avoid distortion.
-  canvas.width = Math.round(w);
-  canvas.height = Math.round(w * 0.78);
-
-  clearCanvas(true);
-
-  // Reset stroke capture (avoids mismatched coords)
-  strokes = [];
-  currentStroke = null;
-
-  // Update UI text if present
-  const status = document.getElementById("hw-status");
-  const out = document.getElementById("hw-candidates");
-  if (status) status.textContent = "Draw a kanji, then click Recognize.";
-  if (out) out.innerHTML = "";
-}
-
-function startDraw(e) {
-  drawing = true;
-  const [x, y] = getPos(e);
-
-  currentStroke = [{ x, y, t: nowMs() }];
-  strokes.push(currentStroke);
-
-  lastX = x; lastY = y;
+function hwStart(slot, e) {
+  const st = hw[slot];
+  if (!st) return;
+  st.drawing = true;
+  const [x, y] = hwPos(st, e);
+  st.lastX = x; st.lastY = y;
+  st.currentStroke = [{ x, y, t: hwNowMs() }];
+  st.strokes.push(st.currentStroke);
   e.preventDefault();
 }
 
-function endDraw() {
-  drawing = false;
-  ctx.beginPath();
-  currentStroke = null;
+function hwEnd(slot) {
+  const st = hw[slot];
+  if (!st) return;
+  st.drawing = false;
+  if (st.ctx) st.ctx.beginPath();
 }
 
-function draw(e) {
-  if (!drawing) return;
+function hwMove(slot, e) {
+  const st = hw[slot];
+  if (!st || !st.drawing) return;
+  const [x, y] = hwPos(st, e);
+  const { size, color } = hwGetBrush();
+
+  st.ctx.globalCompositeOperation = "source-over";
+  st.ctx.strokeStyle = color;
+  st.ctx.lineWidth = size;
+  st.ctx.lineCap = "round";
+  st.ctx.lineJoin = "round";
+
+  st.ctx.beginPath();
+  st.ctx.moveTo(st.lastX, st.lastY);
+  st.ctx.lineTo(x, y);
+  st.ctx.stroke();
+
+  st.lastX = x; st.lastY = y;
+  if (st.currentStroke) st.currentStroke.push({ x, y, t: hwNowMs() });
   e.preventDefault();
-
-  const [x, y] = getPos(e);
-
-  ctx.globalCompositeOperation = (mode === 'erase') ? 'destination-out' : 'source-over';
-  ctx.strokeStyle = (mode === 'erase') ? 'rgba(0,0,0,1)' : document.getElementById('brush-color').value;
-  ctx.lineWidth = +document.getElementById('brush-size').value;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(x, y);
-  ctx.stroke();
-
-  lastX = x; lastY = y;
-
-  // Record points for recognition
-  // If currentStroke is null (edge case), start a new stroke
-  if (!currentStroke) {
-    currentStroke = [{ x, y, t: nowMs() }];
-    strokes.push(currentStroke);
-  } else {
-    currentStroke.push({ x, y, t: nowMs() });
-  }
 }
 
-// Attach listeners once
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('mouseup', endDraw);
-canvas.addEventListener('mouseleave', endDraw);
-canvas.addEventListener('mousemove', draw);
-
-canvas.addEventListener('touchstart', startDraw, { passive: false });
-canvas.addEventListener('touchend', endDraw, { passive: false });
-canvas.addEventListener('touchcancel', endDraw, { passive: false });
-canvas.addEventListener('touchmove', draw, { passive: false });
-
-// UI helpers used by buttons
-function setBrushMode(m) { mode = m; }
-
-function downloadCanvas() {
-  const a = document.createElement('a');
-  a.download = 'kanji-practice.png';
-  a.href = canvas.toDataURL("image/png");
-  a.click();
+function hwClear(slot) {
+  const st = hw[slot];
+  if (!st) return;
+  st.strokes = [];
+  st.currentStroke = null;
+  st.ctx.clearRect(0, 0, st.canvas.width, st.canvas.height);
+  hwDrawGuide(slot);
+  const cand = document.getElementById(st.candidatesId);
+  if (cand) cand.innerHTML = "";
+  const status = document.getElementById(st.statusId);
+  if (status) status.textContent = "Cleared. Draw again, then Recognize.";
 }
 
-function clearInk() {
-  strokes = [];
-  currentStroke = null;
-  clearCanvas(true);
-
-  const out = document.getElementById("hw-candidates");
-  const status = document.getElementById("hw-status");
-  if (out) out.innerHTML = "";
-  if (status) status.textContent = "Draw a kanji, then click Recognize.";
+function hwClearQuery() {
+  const q = document.getElementById("hw-query");
+  if (q) q.value = "";
+  const out = document.getElementById("hw-word-suggestions");
+  if (out) out.innerHTML = '<p class="status-msg">Write kanji (or type) to see word suggestions.</p>';
 }
 
-const HW_ENDPOINT = (window.TSUNDOKU_CONFIG?.handwriteEndpoint || "https://minireader.zoe-caudron.workers.dev/handwrite");
+function hwAddToQuery(ch) {
+  const q = document.getElementById("hw-query");
+  if (!q) return;
+  q.value = (q.value || "") + ch;
+  hwSuggest();
+}
 
-// --- Handwriting recognition (proxied via Worker) ---
-async function recognizeHandwriting() {
-  const status = document.getElementById("hw-status");
-  const out = document.getElementById("hw-candidates");
+async function hwRecognize(slot) {
+  const st = hw[slot];
+  if (!st) return;
 
-  const usable = strokes.filter(st => st && st.length >= 2);
+  const status = document.getElementById(st.statusId);
+  const out = document.getElementById(st.candidatesId);
+
+  const usable = (st.strokes || []).filter(s => s && s.length >= 2);
   if (!usable.length) {
     if (status) status.textContent = "Draw a kanji first 🙂";
     if (out) out.innerHTML = "";
     return;
   }
 
+  if (!HW_ENDPOINT) {
+    if (status) status.textContent = "Handwriting endpoint not configured.";
+    return;
+  }
+
   if (status) status.textContent = "Recognizing…";
   if (out) out.innerHTML = "";
 
-  // Convert strokes into the format expected by Google:
-  const ink = usable.map(st => ([
-    st.map(p => Math.round(p.x)),
-    st.map(p => Math.round(p.y)),
-    st.map(p => Math.round(p.t || 0)),
+  // Google handwriting payload (via worker), per Input Tools format.
+  const ink = usable.map(stroke => ([
+    stroke.map(p => Math.round(p.x)),
+    stroke.map(p => Math.round(p.y)),
+    stroke.map(p => Math.round(p.t || 0)),
   ]));
 
-  const payload = JSON.stringify([
-    "ja",
-    [canvas.width, canvas.height],
-    ink,
-    0,
-    0
-  ]);
+  const payloadObj = {
+    device: navigator.userAgent,
+    options: "enable_pre_space",
+    requests: [{
+      writing_guide: {
+        writing_area_width: st.canvas.width,
+        writing_area_height: st.canvas.height,
+      },
+      ink,
+      language: "ja",
+    }],
+  };
 
   try {
-    const r = await fetch(HW_ENDPOINT,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
-      }
-    );
+    const r = await fetch(HW_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payloadObj),
+    });
 
     const data = await r.json();
-    if (!Array.isArray(data) || data[0] !== "SUCCESS") {
+    const cands = hwExtractCandidates(data);
+
+    if (!cands.length) {
       if (status) status.textContent = "No result. Try writing larger / clearer.";
       return;
     }
 
-    const candidates = data?.[1]?.[0]?.[1] || [];
-    if (!candidates.length) {
-      if (status) status.textContent = "No candidates returned. Try again.";
-      return;
-    }
-
-    if (status) status.textContent = "Pick the correct kanji:";
-    candidates.slice(0, 12).forEach(c => {
-      const btn = document.createElement("button");
-      btn.className = "btn btn-sm btn-outline";
-      btn.textContent = c;
-      btn.style.fontFamily = "'Noto Serif JP', serif";
-      btn.onclick = () => {
-        document.getElementById("search-input").value = c;
-        showPanel("lookup");
-        lookupWord();
-      };
-      out.appendChild(btn);
-    });
+    if (status) status.textContent = "Click a candidate to add it.";
+    hwRenderCandidates(out, cands.slice(0, 12));
   } catch (e) {
-    if (status) status.textContent = "Recognition failed (network blocked). Try again, or use radicals.";
+    if (status) status.textContent = "Recognition failed (network or worker error).";
   }
 }
 
+function hwRenderCandidates(outEl, candidates) {
+  if (!outEl) return;
+  outEl.innerHTML = "";
+  candidates.forEach(ch => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn btn-sm btn-outline";
+    b.textContent = ch;
+    b.onclick = () => hwAddToQuery(ch);
+    outEl.appendChild(b);
+  });
+}
+
+function hwExtractCandidates(resp) {
+  // Google Input Tools responses vary; we try to find a good "string list" anywhere in the structure.
+  const out = [];
+
+  const isJP = (s) => typeof s === "string" && /[\u3040-\u30ff\u3400-\u9fff]/.test(s);
+
+  function walk(node) {
+    if (!node) return;
+    if (Array.isArray(node)) {
+      // If it's an array of strings, consider it.
+      if (node.length && node.every(x => typeof x === "string")) {
+        node.forEach(s => { if (isJP(s)) out.push(s); });
+      } else {
+        node.forEach(walk);
+      }
+      return;
+    }
+    if (typeof node === "object") {
+      Object.values(node).forEach(walk);
+    }
+  }
+
+  walk(resp);
+
+  // Prefer single-character kanji candidates if present
+  const singles = [...new Set(out)].filter(s => s.length === 1);
+  if (singles.length) return singles;
+
+  return [...new Set(out)];
+}
+
+let hwSuggestTimer = null;
+function hwSuggest() {
+  if (hwSuggestTimer) clearTimeout(hwSuggestTimer);
+  hwSuggestTimer = setTimeout(async () => {
+    const q = document.getElementById("hw-query");
+    const out = document.getElementById("hw-word-suggestions");
+    if (!q || !out) return;
+
+    const kw = (q.value || "").trim();
+    if (!kw) {
+      out.innerHTML = '<p class="status-msg">Write kanji (or type) to see word suggestions.</p>';
+      return;
+    }
+
+    out.innerHTML = '<p class="status-msg">Searching…</p>';
+    try {
+      const r = await fetch(JISHO_API + encodeURIComponent(kw));
+      const data = await r.json();
+      renderMiniEntries(data.data || [], out);
+    } catch {
+      out.innerHTML = `<p class="status-msg">Could not reach Jisho. <a href="https://jisho.org/search/${encodeURIComponent(kw)}" target="_blank">Search directly ↗</a></p>`;
+    }
+  }, 250);
+}
+
+function hwLookup() {
+  hwSuggest(); // just reuse suggestions container (it already searches)
+}
+
+// Minimal renderer (used by handwriting + radicals)
+function renderMiniEntries(entries, containerEl) {
+  if (!containerEl) return;
+  if (!entries || !entries.length) {
+    containerEl.innerHTML = '<p class="status-msg">No results found.</p>';
+    return;
+  }
+
+  const items = entries.slice(0, 8).map(entry => {
+    const word = entry.japanese?.[0]?.word || entry.japanese?.[0]?.reading || "";
+    const reading = entry.japanese?.[0]?.reading || "";
+    const meanings = entry.senses?.[0]?.english_definitions?.slice(0, 3).join("; ") || "";
+
+    return { word, reading, meanings };
+  });
+
+  containerEl.innerHTML = "";
+  items.forEach(it => {
+    const row = document.createElement("div");
+    row.className = "mini-row";
+    row.innerHTML = `
+      <div class="mini-k">${it.word}</div>
+      <div class="mini-r">${it.word !== it.reading ? it.reading : ""}</div>
+      <div class="mini-m">${it.meanings}</div>
+    `;
+    row.onclick = () => {
+      const inp = document.getElementById("search-input");
+      if (inp) inp.value = it.word;
+      if (typeof showPanel === "function") showPanel("lookup", document.querySelector("nav button"));
+      if (typeof lookupWord === "function") lookupWord();
+    };
+    containerEl.appendChild(row);
+  });
+
+  // Add some minimal styles via inline CSS class hooks (defined in styles.css)
+}
+
+window.hwInit = hwInit;
+window.hwResizeAll = hwResizeAll;
+window.hwClear = hwClear;
+window.hwRecognize = hwRecognize;
+window.hwLookup = hwLookup;
+window.hwClearQuery = hwClearQuery;

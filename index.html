@@ -83,10 +83,10 @@
 
   <!-- ── HANDWRITE PANEL ── -->
   <div class="panel" id="panel-writing">
-    <div class="writing-layout">
+    <div class="writing-layout writing-two">
       <div class="card canvas-wrap">
-        <h2>Handwrite Kanji — 手書き検索</h2>
-        <canvas id="writing-canvas" width="420" height="350"></canvas>
+        <h2>Handwrite Kanji — 手書き検索 (1)</h2>
+        <canvas id="writing-canvas-1" width="420" height="350"></canvas>
 
         <div class="canvas-controls">
           <div class="brush-row">
@@ -94,23 +94,40 @@
             <input type="range" id="brush-size" min="1" max="40" value="10" />
             <input type="color" id="brush-color" value="#1a1410" />
           </div>
-          <button class="btn btn-sm btn-outline" onclick="clearInk()">Clear</button>
-          <button class="btn btn-sm" onclick="recognizeHandwriting()">Recognize</button>
+          <button class="btn btn-sm btn-outline" onclick="hwClear(1)">Clear</button>
+          <button class="btn btn-sm" onclick="hwRecognize(1)">Recognize</button>
         </div>
 
-        <div id="hw-candidates" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
-        <p class="status-msg" id="hw-status">Draw a kanji, then click Recognize. (Chrome/Edge works best.)</p>
+        <div class="candidate-row" id="hw-candidates-1"></div>
+        <p class="status-msg" id="hw-status-1">Draw a kanji, then click Recognize.</p>
       </div>
 
-      <div class="card notepad-wrap">
-        <h2>Notepad — ノート</h2>
-        <textarea id="notepad" placeholder="Copy vocabulary, write sentences, practice readings…
-例: 日本語を勉強しています。"></textarea>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn btn-sm btn-outline" onclick="downloadNotes()">Save TXT</button>
-          <button class="btn btn-sm btn-outline" onclick="document.getElementById('notepad').value=''">Clear</button>
+      <div class="card canvas-wrap">
+        <h2>Handwrite Kanji — 手書き検索 (2)</h2>
+        <canvas id="writing-canvas-2" width="420" height="350"></canvas>
+
+        <div class="canvas-controls">
+          <div class="brush-row">
+            <span>Size</span>
+            <!-- shares brush controls -->
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="hwClear(2)">Clear</button>
+          <button class="btn btn-sm" onclick="hwRecognize(2)">Recognize</button>
         </div>
-        <p class="status-msg" style="padding-bottom:0">Tip: after you pick a candidate, it auto-searches in Lookup.</p>
+
+        <div class="candidate-row" id="hw-candidates-2"></div>
+        <p class="status-msg" id="hw-status-2">You can write a second kanji to build multi-kanji words.</p>
+      </div>
+
+      <div class="card hw-build">
+        <h2>Build Word — 組み合わせ</h2>
+        <p class="radical-info">Click a candidate above to add it. You can edit the field manually too.</p>
+        <div class="search-bar">
+          <input id="hw-query" type="text" placeholder="例: 日本 / 猫 / 一" autocomplete="off" />
+          <button class="btn" onclick="hwLookup()">Search</button>
+          <button class="btn btn-outline" onclick="hwClearQuery()">Clear</button>
+        </div>
+        <div id="hw-word-suggestions"><p class="status-msg">Write kanji (or type) to see word suggestions.</p></div>
       </div>
     </div>
   </div>
@@ -127,12 +144,23 @@
       <div class="card">
         <h2>Selected Radicals</h2>
         <div class="selected-radicals" id="selected-radicals-display">—</div>
-        <div style="display:flex;gap:8px;margin-bottom:16px">
-          <button class="btn" onclick="searchByRadicals()">Search Kanji</button>
+
+        <div class="search-bar" style="margin-top:10px;margin-bottom:14px">
+          <input id="radical-kanji-input" type="text" placeholder="Kanji found via radicals… (click candidates to add)" autocomplete="off">
+          <button class="btn" onclick="radicalLookup()">Search</button>
           <button class="btn btn-outline" onclick="clearRadicals()">Clear</button>
         </div>
-        <div id="radical-results"><p class="status-msg">Select radicals and click Search.</p></div>
-      </div>
+
+        <div id="radical-candidates" class="candidate-row"></div>
+        <p class="status-msg" id="radical-status">Select radicals, then click “Get Kanji”.</p>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px">
+          <button class="btn btn-sm" onclick="searchByRadicals()">Get Kanji</button>
+          <button class="btn btn-sm btn-outline" onclick="clearRadicalQuery()">Clear input</button>
+        </div>
+
+        <div id="radical-word-suggestions"><p class="status-msg">Pick kanji (or type) to see word suggestions.</p></div>
+      </div></div>
     </div>
   </div>
 
