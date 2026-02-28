@@ -1,8 +1,8 @@
 /* =========================
    RADICAL / COMPONENT SEARCH (element2kanji.json)
-   - Uses local data/element2kanji.json (fast + stable on GitHub Pages)
-   - Build multi-kanji query by clicking candidates
-   - Suggest words via Jisho based on current query
+   - Loads local data/element2kanji.json
+   - Click kanji candidates to build multi-kanji query
+   - Jisho word suggestions for current query
 ========================= */
 
 const JISHO_API_R = (window.TSUNDOKU_CONFIG && window.TSUNDOKU_CONFIG.jishoApi) || "https://jisho.org/api/v1/search/words?keyword=";
@@ -10,14 +10,12 @@ const JISHO_API_R = (window.TSUNDOKU_CONFIG && window.TSUNDOKU_CONFIG.jishoApi) 
 let element2kanji = null;
 let elementIndexLoadError = null;
 
-// Load element2kanji.json from the repo.
-// IMPORTANT: Put the file at: /data/element2kanji.json (same level as index.html)
+// IMPORTANT: Put file at /data/element2kanji.json (repo root /data folder)
 async function loadElementIndex() {
   if (element2kanji) return element2kanji;
   if (elementIndexLoadError) throw elementIndexLoadError;
 
   const url = new URL("./data/element2kanji.json", window.location.href).toString();
-
   try {
     const r = await fetch(url, { cache: "no-store" });
     if (!r.ok) throw new Error(`Could not load element2kanji.json (HTTP ${r.status})`);
@@ -29,7 +27,7 @@ async function loadElementIndex() {
   }
 }
 
-/* Radical list (subset; extend if you want) */
+// Minimal radicals list (you can extend)
 const RADICALS = [
   {r:'一',s:1},{r:'丨',s:1},{r:'丶',s:1},{r:'ノ',s:1},{r:'乙',s:1},{r:'亅',s:1},
   {r:'二',s:2},{r:'亠',s:2},{r:'人',s:2},{r:'儿',s:2},{r:'入',s:2},{r:'八',s:2},{r:'冂',s:2},{r:'冖',s:2},{r:'冫',s:2},{r:'几',s:2},{r:'凵',s:2},{r:'刀',s:2},{r:'力',s:2},{r:'勹',s:2},{r:'匕',s:2},{r:'匚',s:2},{r:'十',s:2},{r:'卜',s:2},{r:'卩',s:2},{r:'厂',s:2},{r:'厶',s:2},{r:'又',s:2},
@@ -40,49 +38,12 @@ const RADICALS = [
 const strokeCounts = [...new Set(RADICALS.map(r => r.s))].sort((a,b)=>a-b);
 let strokeFilter = null;
 
-function ensureRadicalQueryUI() {
-  // Adds (if missing) a query input for building multi-kanji words
-  const host = document.getElementById("panel-radicals");
-  if (!host) return;
-
-  if (!document.getElementById("radical-query")) {
-    const rightCard = host.querySelector(".radical-layout .card:nth-child(2)");
-    if (rightCard) {
-      const block = document.createElement("div");
-      block.style.marginBottom = "12px";
-      block.innerHTML = `
-        <label style="display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px">Build word</label>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input id="radical-query" type="text" placeholder="Click kanji candidates to build a word…" style="flex:1;min-width:220px;padding:10px 12px;">
-          <button class="btn btn-sm" id="radical-lookup-btn" type="button">Search</button>
-          <button class="btn btn-sm btn-outline" id="radical-clear-btn" type="button">Clear</button>
-        </div>
-        <div id="radical-suggest" style="margin-top:10px"></div>
-      `;
-      rightCard.insertBefore(block, rightCard.children[1] || null);
-
-      document.getElementById("radical-lookup-btn")?.addEventListener("click", () => {
-        const q = document.getElementById("radical-query").value.trim();
-        if (q) {
-          document.getElementById("search-input").value = q;
-          showPanel("lookup");
-          lookupWord(q);
-        }
-      });
-      document.getElementById("radical-clear-btn")?.addEventListener("click", () => {
-        document.getElementById("radical-query").value = "";
-        renderWordSuggestions("", "radical-suggest");
-      });
-      document.getElementById("radical-query")?.addEventListener("input", (e) => {
-        renderWordSuggestions(e.target.value, "radical-suggest");
-      });
-    }
-  }
-}
+// shared state from state.js
+// selectedRadicals is defined globally in state.js, but guard anyway:
+if (typeof window.selectedRadicals === "undefined") window.selectedRadicals = new Set();
+const selectedRadicals = window.selectedRadicals;
 
 function renderRadicals() {
-  ensureRadicalQueryUI();
-
   const sf = document.getElementById('stroke-filter');
   if (!sf) return;
 
@@ -101,7 +62,16 @@ function renderRadicals() {
       sf.appendChild(btn);
     });
   }
+
+  // input listeners
+  const q = document.getElementById("radical-query");
+  if (q && !q.dataset.bound) {
+    q.dataset.bound = "1";
+    q.addEventListener("input", () => radicalSuggest());
+  }
+
   renderRadicalGrid();
+  updateSelectedDisplay();
 }
 
 function highlightStroke(el) {
@@ -129,30 +99,39 @@ function renderRadicalGrid() {
 function toggleRadical(r, btn) {
   if (selectedRadicals.has(r)) { selectedRadicals.delete(r); btn.classList.remove('selected'); }
   else { selectedRadicals.add(r); btn.classList.add('selected'); }
+  updateSelectedDisplay();
+}
+
+function updateSelectedDisplay() {
   const disp = document.getElementById('selected-radicals-display');
-  if (disp) disp.textContent = selectedRadicals.size ? [...selectedRadicals].join(' ') : '—';
+  if (!disp) return;
+  disp.textContent = selectedRadicals.size ? [...selectedRadicals].join(' ') : '—';
 }
 
 function clearRadicals() {
   selectedRadicals.clear();
   renderRadicalGrid();
-  document.getElementById('selected-radicals-display').textContent = '—';
-  document.getElementById('radical-results').innerHTML = '<p class="status-msg">Select radicals/components and click Search.</p>';
+  updateSelectedDisplay();
+  const cand = document.getElementById("radical-kanji-candidates");
+  if (cand) cand.innerHTML = '<p class="status-msg">Select radicals and click “Get Kanji”.</p>';
 }
 
 async function searchByRadicals() {
-  if (!selectedRadicals.size) { alert('Select at least one radical/component.'); return; }
-  const res = document.getElementById('radical-results');
-  if (res) res.innerHTML = '<p class="status-msg">Loading index…</p>';
+  const cand = document.getElementById("radical-kanji-candidates");
+  if (!selectedRadicals.size) {
+    if (cand) cand.innerHTML = '<p class="status-msg">Select at least one radical/component.</p>';
+    return;
+  }
+
+  if (cand) cand.innerHTML = '<p class="status-msg">Loading element index…</p>';
 
   let idx;
   try {
     idx = await loadElementIndex();
   } catch (e) {
-    if (res) {
-      res.innerHTML = `<p class="status-msg">⚠️ Could not load <code>data/element2kanji.json</code>.<br>
-      Put it in your repo at <code>/data/element2kanji.json</code> and confirm it opens in the browser.</p>`;
-    }
+    if (cand) cand.innerHTML =
+      `<p class="status-msg">⚠️ Could not load <code>data/element2kanji.json</code>.<br>
+      Ensure it exists at <code>/data/element2kanji.json</code> in your repo.</p>`;
     return;
   }
 
@@ -167,52 +146,53 @@ async function searchByRadicals() {
   renderKanjiCandidates(chars);
 }
 
-function appendToRadicalQuery(kanji) {
-  const inp = document.getElementById("radical-query");
-  if (!inp) return;
-  inp.value = (inp.value || "") + kanji;
-  renderWordSuggestions(inp.value, "radical-suggest");
-}
-
 function renderKanjiCandidates(chars) {
-  const res = document.getElementById('radical-results');
-  if (!res) return;
+  const cand = document.getElementById("radical-kanji-candidates");
+  if (!cand) return;
 
   if (!chars.length) {
-    res.innerHTML = '<p class="status-msg">No candidates. Try fewer/different parts (or handwriting).</p>';
+    cand.innerHTML = '<p class="status-msg">No candidates. Try fewer/different parts.</p>';
     return;
   }
 
-  res.innerHTML = `
+  cand.innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:6px">
       ${chars.map(k => `
         <button class="btn btn-sm btn-outline"
           style="font-family:'Noto Serif JP',serif;font-size:1.15rem"
-          onclick="appendToRadicalQuery('${k}')">${k}</button>
+          onclick="radicalAppend('${k}')">${k}</button>
       `).join('')}
     </div>
-    <p class="status-msg" style="margin-top:10px">Click candidates to build a multi-kanji word.</p>
+    <p class="status-msg" style="margin-top:10px">Click kanji to build a word.</p>
   `;
 }
 
-/* Suggestions: show words based on current query */
-async function renderWordSuggestions(query, targetId) {
-  const el = document.getElementById(targetId);
-  if (!el) return;
+function radicalAppend(kanji) {
+  const inp = document.getElementById("radical-query");
+  if (!inp) return;
+  inp.value = (inp.value || "") + kanji;
+  radicalSuggest();
+}
 
-  const q = (query || "").trim();
-  if (!q) { el.innerHTML = ""; return; }
+async function radicalSuggest() {
+  const box = document.getElementById("radical-word-suggestions");
+  const q = document.getElementById("radical-query")?.value?.trim() || "";
+  if (!box) return;
 
-  el.innerHTML = '<p class="status-msg">Suggestions…</p>';
+  if (!q) {
+    box.innerHTML = '<p class="status-msg">Build a query to see suggestions.</p>';
+    return;
+  }
+
+  box.innerHTML = '<p class="status-msg">Suggestions…</p>';
   try {
     const r = await fetch(JISHO_API_R + encodeURIComponent(q));
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     const entries = (data.data || []).slice(0, 6);
+    if (!entries.length) { box.innerHTML = '<p class="status-msg">No suggestions.</p>'; return; }
 
-    if (!entries.length) { el.innerHTML = '<p class="status-msg">No suggestions.</p>'; return; }
-
-    el.innerHTML = `
+    box.innerHTML = `
       <div style="display:flex;flex-direction:column;gap:8px">
         ${entries.map(e => {
           const w = e.japanese[0]?.word || e.japanese[0]?.reading || '';
@@ -220,17 +200,43 @@ async function renderWordSuggestions(query, targetId) {
           const m = e.senses[0]?.english_definitions?.slice(0,2).join('; ') || '';
           return `<button class="btn btn-sm btn-outline" style="text-align:left"
             onclick="document.getElementById('search-input').value='${w}'; showPanel('lookup'); lookupWord('${w}')">
-            <span style="font-family:'Noto Serif JP',serif;font-weight:600">${w}</span>
-            <span style="opacity:0.7;margin-left:8px">${w!==rd?rd:''}</span>
+            <span style="font-family:'Noto Serif JP',serif;font-weight:600">${escapeHtml(w)}</span>
+            <span style="opacity:0.7;margin-left:8px">${escapeHtml(w!==rd?rd:'')}</span>
             <span style="opacity:0.75;margin-left:10px">— ${escapeHtml(m)}</span>
           </button>`;
         }).join('')}
       </div>`;
-  } catch {
-    el.innerHTML = '<p class="status-msg">Could not load suggestions.</p>';
+  } catch (e) {
+    box.innerHTML = '<p class="status-msg">Could not load suggestions.</p>';
   }
+}
+
+function radicalSearchWord() {
+  const q = document.getElementById("radical-query")?.value?.trim() || "";
+  if (!q) return;
+  document.getElementById("search-input").value = q;
+  showPanel("lookup");
+  lookupWord(q);
+}
+
+function radicalClearAll() {
+  const inp = document.getElementById("radical-query");
+  if (inp) inp.value = "";
+  const box = document.getElementById("radical-word-suggestions");
+  if (box) box.innerHTML = '<p class="status-msg">Build a query to see suggestions.</p>';
+  const cand = document.getElementById("radical-kanji-candidates");
+  if (cand) cand.innerHTML = '<p class="status-msg">Select radicals and click “Get Kanji”.</p>';
+  clearRadicals();
 }
 
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+
+// expose for HTML onclick
+window.renderRadicals = renderRadicals;
+window.searchByRadicals = searchByRadicals;
+window.clearRadicals = clearRadicals;
+window.radicalAppend = radicalAppend;
+window.radicalSearchWord = radicalSearchWord;
+window.radicalClearAll = radicalClearAll;

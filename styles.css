@@ -983,3 +983,11 @@ nav button.active { border-color: var(--accent-stroke) !important; }
 .topbar{
   background: var(--accent) !important;
 }
+
+
+/* Ensure handwriting canvases are interactive */
+#writing-canvas-1, #writing-canvas-2 {
+  pointer-events: auto !important;
+  touch-action: none !important;
+  cursor: crosshair;
+}
