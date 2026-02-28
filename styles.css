@@ -5,10 +5,10 @@
 /* Default: Flowers */
 :root {
   /* palette */
-  --bg: #EDF2D4;
-  --accent: #CAC4F6;
-  --accent-2: #667F60;
-  --ink: #4B4A3E;
+  --bg: #F7F4D5;
+  --accent: #839958;
+  --accent-2: #D3968C;
+  --ink: #0A3323;
 
   /* derived */
   --surface: color-mix(in srgb, white 70%, var(--bg));
@@ -23,8 +23,8 @@
   --radius-pill: 999px;
 
   /* shadows */
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.07);
-  --shadow-md: 0 10px 30px rgba(0,0,0,0.10);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.05);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.05);
 
   /* focus ring */
   --ring: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);
@@ -32,10 +32,10 @@
 
 /* Joyful */
 :root[data-theme="joyful"] {
-  --bg: #ffe6f1;
-  --accent: #ffa5c8;
-  --accent-2: #a0ba00;
-  --ink: #2a2a2a;
+  --bg: #FEF8F0;
+  --accent: #8CA7F4;
+  --accent-2: #DBF48C;
+  --ink: #3C183C;
 
   --surface: color-mix(in srgb, #fff4a5 70%, white);
   --surface-2: color-mix(in srgb, #fff4a5 55%, white);
@@ -46,10 +46,10 @@
 
 /* Plum */
 :root[data-theme="plum"] {
-  --bg: #351E28;
-  --accent: #AF6384;
-  --accent-2: #665F76;
-  --ink: #F4EEF2;
+  --bg: #EED4D1;
+  --accent: #432033;
+  --accent-2: #976D90;
+  --ink: #323C31;
 
   --surface: color-mix(in srgb, #5B1E32 80%, black);
   --surface-2: color-mix(in srgb, #5B1E32 65%, black);
