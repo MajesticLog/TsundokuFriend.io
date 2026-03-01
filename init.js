@@ -3,9 +3,12 @@
 ========================= */
 
 function initApp() {
-  if (typeof hwInit === 'function') hwInit();
-  if (typeof renderBookList === 'function') renderBookList();
-  if (typeof initShelf === 'function') initShelf();
+  if (typeof hwInit           === 'function') hwInit();
+  if (typeof renderBookList   === 'function') renderBookList();
+  if (typeof initShelf        === 'function') initShelf();
+  // Pre-render the radical grid while its panel is hidden —
+  // DOM manipulation works fine on display:none elements.
+  if (typeof renderRadicals   === 'function') renderRadicals();
 }
 
 if (document.readyState === 'loading') {
