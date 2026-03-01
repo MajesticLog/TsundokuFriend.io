@@ -5,10 +5,19 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>積読フレンド ♥ </title>
-  <link rel="icon" type="image/svg+xml" href="./plumheart.svg">
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
+<meta property="og:title" content="積読フレンド ♥"/>
+<meta property="og:description" content="Japanese reading companion — look up words, track books, practice kanji"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="https://majesticlog.github.io/favicon.png"/>
+<meta property="og:url" content="https://majesticlog.github.io/"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="積読フレンド ♥"/>
+<meta name="twitter:description" content="Japanese reading companion — look up words, track books, practice kanji"/>
+<meta name="twitter:image" content="https://majesticlog.github.io/favicon.png"/>
+<link rel="apple-touch-icon" href="favicon.png"/>
 <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
@@ -18,6 +27,7 @@
 </div>
 <div class="topbar-right">
 <span class="tagline">Japanese Reading Companion</span>
+<button class="btn btn-sm btn-outline sync-btn" onclick="openSyncPanel()" title="Backup &amp; restore data" style="font-size:0.75rem;padding:4px 10px;opacity:0.7">⬆⬇ Sync</button>
 <div aria-label="Theme" class="theme-dots">
 <button aria-label="Flowers theme" class="theme-dot" data-theme="flowers" title="Flowers" type="button"></button>
 <button aria-label="Joyful theme" class="theme-dot" data-theme="joyful" title="Joyful" type="button"></button>
@@ -28,7 +38,6 @@
 <nav>
 <button class="active" onclick="showPanel('lookup', this)">🔍 Lookup</button>
 <button onclick="showPanel('bookshelf', this)">📖 Books</button>
-<button onclick="showPanel('lists', this)">📚 Word Lists</button>
 <button onclick="showPanel('writing', this)">✍️ Handwrite</button>
 <button onclick="showPanel('radicals', this)">部首 Radicals</button>
 <button onclick="showPanel('flashcards', this)">🃏 Flashcards</button>
@@ -47,24 +56,7 @@
 </div>
 <div class="card">
 <h2>Quick Notes — メモ</h2>
-<textarea id="quick-notes" placeholder="Jot down notes, sentences, context…" style="width:100%;min-height:200px;font-family:'Kosugi Maru',sans-serif;font-size:0.95rem;line-height:1.9;padding:12px;outline:none;resize:vertical;"></textarea>
-</div>
-</div>
-</div>
-<!-- ── WORD LISTS PANEL ── -->
-<div class="panel" id="panel-lists">
-<div class="lists-layout">
-<div class="card" style="padding:16px">
-<h2>Books — 本</h2>
-<div class="new-book-form">
-<input id="new-book-input" onkeydown="if(event.key==='Enter')addBook()" placeholder="Book title…" type="text"/>
-<button class="btn btn-sm" onclick="addBook()">+</button>
-</div>
-<div class="book-list" id="book-list"></div>
-</div>
-<div class="card">
-<h2 id="list-title">Word List — 単語リスト</h2>
-<div id="word-list-content"><p class="empty-state">Select or create a book to see its word list.</p></div>
+<textarea id="quick-notes" placeholder="Jot down notes, sentences, context…" oninput="localStorage.setItem('tsundoku-notes',this.value)" style="width:100%;min-height:200px;font-family:'Kosugi Maru',sans-serif;font-size:0.95rem;line-height:1.9;padding:12px;outline:none;resize:vertical;"></textarea>
 </div>
 </div>
 </div>
@@ -309,6 +301,36 @@
 </div>
 </div>
 </div>
+
+<!-- ── SYNC / BACKUP MODAL ── -->
+<div class="modal-overlay" id="sync-modal">
+  <div class="modal" style="max-width:480px">
+    <h2>Backup &amp; Restore — データ保存</h2>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px">
+      Export your books, vocab, and notes as a JSON file to back up or move to another device.
+      Import to restore from a backup.
+    </p>
+
+    <div class="modal-section">
+      <label>Export all data</label>
+      <button class="btn btn-sm" onclick="exportAllData()" style="width:100%">⬇ Download backup.json</button>
+    </div>
+
+    <div class="modal-section" style="margin-top:14px">
+      <label>Import from backup</label>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px">
+        ⚠ This will <strong>merge</strong> imported books with your current data (no duplicates by id).
+      </p>
+      <input type="file" id="sync-file-input" accept=".json" style="display:none" onchange="importAllData(event)"/>
+      <button class="btn btn-sm btn-outline" onclick="document.getElementById('sync-file-input').click()" style="width:100%">⬆ Choose backup.json…</button>
+      <p id="sync-status" style="font-size:0.82rem;margin-top:8px;color:var(--muted)"></p>
+    </div>
+
+    <div class="modal-footer" style="margin-top:18px">
+      <button class="btn btn-sm btn-outline" onclick="closeSyncPanel()">Close</button>
+    </div>
+  </div>
+</div>
 </main>
 <script defer="" src="state.js"></script>
 <script defer="" src="nav.js"></script>
@@ -318,5 +340,6 @@
 <script defer="" src="handwriting.js"></script>
 <script defer="" src="radicals.js"></script>
 <script defer="" src="flashcards.js"></script>
+<script defer="" src="sync.js"></script>
 <script defer="" src="init.js"></script>
 </body></html>

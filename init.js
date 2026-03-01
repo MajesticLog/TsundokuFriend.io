@@ -9,6 +9,10 @@ function initApp() {
   // Pre-render the radical grid while its panel is hidden —
   // DOM manipulation works fine on display:none elements.
   if (typeof renderRadicals   === 'function') renderRadicals();
+  // Restore quick notes
+  const notes = localStorage.getItem('tsundoku-notes');
+  const ta = document.getElementById('quick-notes');
+  if (notes && ta) ta.value = notes;
 }
 
 if (document.readyState === 'loading') {

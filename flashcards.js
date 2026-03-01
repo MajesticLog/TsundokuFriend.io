@@ -1,6 +1,8 @@
 /* =========================
    FLASHCARDS
+   Reads vocab from the Books shelf (tsundoku-shelf localStorage).
 ========================= */
+
 let fc = {
   deck: [],
   queue: [],
@@ -13,20 +15,35 @@ let fc = {
   selectedBooks: new Set(),
 };
 
+// Get shelf entries that have at least one vocab word
+function _getShelf() {
+  try {
+    return JSON.parse(localStorage.getItem('tsundoku-shelf') || '[]');
+  } catch(_) { return []; }
+}
+
 function showFlashcardsSetup() {
   const grid = document.getElementById('fc-book-grid');
+  if (!grid) return;
   grid.innerHTML = '';
-  if (!books.length) {
-    grid.innerHTML = '<p class="status-msg">No books yet. Add words in the Lookup tab first.</p>';
+
+  const shelf = _getShelf().filter(e => e.vocab && e.vocab.length > 0);
+
+  if (!shelf.length) {
+    grid.innerHTML =
+      '<p class="status-msg">No vocab yet — look up words in the Lookup tab and add them to a book.</p>';
     return;
   }
-  books.forEach(b => {
+
+  shelf.forEach(entry => {
     const btn = document.createElement('button');
-    btn.className = 'fc-book-opt' + (fc.selectedBooks.has(b.id) ? ' selected' : '');
-    btn.innerHTML = `${escapeHTML(b.title)} <span style="font-size:0.75rem;opacity:0.6">(${b.words.length})</span>`;
+    btn.className = 'fc-book-opt' + (fc.selectedBooks.has(entry.id) ? ' selected' : '');
+    btn.innerHTML =
+      escapeHTML(entry.title) +
+      ` <span style="font-size:0.75rem;opacity:0.6">(${entry.vocab.length})</span>`;
     btn.onclick = () => {
-      if (fc.selectedBooks.has(b.id)) fc.selectedBooks.delete(b.id);
-      else fc.selectedBooks.add(b.id);
+      if (fc.selectedBooks.has(entry.id)) fc.selectedBooks.delete(entry.id);
+      else fc.selectedBooks.add(entry.id);
       btn.classList.toggle('selected');
     };
     grid.appendChild(btn);
@@ -34,18 +51,24 @@ function showFlashcardsSetup() {
 }
 
 function startFlashcards() {
-  if (!fc.selectedBooks.size) {
-    books.forEach(b => fc.selectedBooks.add(b.id));
-  }
+  const shelf = _getShelf().filter(e => e.vocab && e.vocab.length > 0);
+
+  // If nothing selected, use all shelf books
+  const toStudy = fc.selectedBooks.size
+    ? shelf.filter(e => fc.selectedBooks.has(e.id))
+    : shelf;
 
   let words = [];
-  books.filter(b => fc.selectedBooks.has(b.id)).forEach(b => {
-    b.words.forEach(w => words.push({ ...w, bookId: b.id }));
+  toStudy.forEach(entry => {
+    entry.vocab.forEach(w => words.push({ ...w, bookId: entry.id, bookTitle: entry.title }));
   });
 
-  if (!words.length) { alert('No words in selected books. Add words first!'); return; }
+  if (!words.length) {
+    alert('No words found. Add vocab to your books from the Lookup tab first.');
+    return;
+  }
 
-  fc.mode = document.getElementById('fc-mode').value;
+  fc.mode  = document.getElementById('fc-mode').value;
   const order = document.getElementById('fc-order').value;
   const limit = parseInt(document.getElementById('fc-limit').value, 10);
 
@@ -57,12 +80,12 @@ function startFlashcards() {
 
   if (limit > 0) words = words.slice(0, limit);
 
-  fc.deck = words;
-  fc.queue = [...words];
-  fc.idx = 0;
-  fc.stats = { again: 0, hard: 0, good: 0, easy: 0 };
+  fc.deck      = words;
+  fc.queue     = [...words];
+  fc.idx       = 0;
+  fc.stats     = { again: 0, hard: 0, good: 0, easy: 0 };
   fc.againWords = [];
-  fc.flipped = false;
+  fc.flipped   = false;
 
   document.getElementById('fc-setup').style.display = 'none';
   document.getElementById('fc-results').classList.remove('active');
@@ -75,29 +98,29 @@ function loadCard() {
   if (fc.idx >= fc.queue.length) { showResults(); return; }
 
   fc.current = fc.queue[fc.idx];
-  fc.flipped = false;
+  fc.flipped  = false;
 
-  const scene = document.getElementById('fc-card-scene');
-  scene.classList.remove('flipped');
+  document.getElementById('fc-card-scene').classList.remove('flipped');
   document.getElementById('fc-ratings').classList.remove('visible');
 
   const total = fc.queue.length;
-  const done = fc.idx;
+  const done  = fc.idx;
   document.getElementById('fc-count').textContent = `${done + 1} / ${total}`;
   document.getElementById('fc-progress-fill').style.width = `${(done / total) * 100}%`;
   document.getElementById('stat-again').textContent = fc.stats.again;
-  document.getElementById('stat-hard').textContent = fc.stats.hard;
-  document.getElementById('stat-good').textContent = fc.stats.good;
-  document.getElementById('stat-easy').textContent = fc.stats.easy;
+  document.getElementById('stat-hard').textContent  = fc.stats.hard;
+  document.getElementById('stat-good').textContent  = fc.stats.good;
+  document.getElementById('stat-easy').textContent  = fc.stats.easy;
 
   const w = fc.current;
   const m = fc.mode;
+
   const frontHint = document.getElementById('fc-front-hint');
   const frontWord = document.getElementById('fc-front-word');
-  const frontSub = document.getElementById('fc-front-sub');
-  const backWord = document.getElementById('fc-back-word');
-  const backMeaning = document.getElementById('fc-back-meaning');
-  const backReading = document.getElementById('fc-back-reading');
+  const frontSub  = document.getElementById('fc-front-sub');
+  const backWord  = document.getElementById('fc-back-word');
+  const backMean  = document.getElementById('fc-back-meaning');
+  const backRead  = document.getElementById('fc-back-reading');
 
   if (m === 'kanji-to-meaning') {
     frontHint.textContent = 'KANJI';
@@ -105,24 +128,24 @@ function loadCard() {
     frontWord.style.fontSize = w.word.length > 4 ? '2.8rem' : '4.5rem';
     frontSub.textContent = '';
     backWord.textContent = w.word;
-    backMeaning.textContent = w.meaning;
-    backReading.textContent = w.reading;
+    backMean.textContent = w.meaning;
+    backRead.textContent = w.reading;
   } else if (m === 'meaning-to-kanji') {
     frontHint.textContent = 'MEANING';
     frontWord.textContent = w.meaning;
     frontWord.style.fontSize = w.meaning.length > 20 ? '1.2rem' : '1.8rem';
     frontSub.textContent = '';
     backWord.textContent = w.word;
-    backMeaning.textContent = w.meaning;
-    backReading.textContent = w.reading;
+    backMean.textContent = w.meaning;
+    backRead.textContent = w.reading;
   } else {
     frontHint.textContent = 'READING';
     frontWord.textContent = w.reading;
     frontWord.style.fontSize = '3rem';
     frontSub.textContent = '';
     backWord.textContent = w.word;
-    backMeaning.textContent = w.meaning;
-    backReading.textContent = w.reading;
+    backMean.textContent = w.meaning;
+    backRead.textContent = w.reading;
   }
 }
 
@@ -138,8 +161,8 @@ function rateCard(rating) {
   fc.stats[rating]++;
 
   const scores = JSON.parse(localStorage.getItem('fc-scores') || '{}');
-  const word = fc.current.word;
-  const prev = scores[word] || { ease: 2.5, interval: 1, reps: 0 };
+  const word   = fc.current.word;
+  const prev   = scores[word] || { ease: 2.5, interval: 1, reps: 0 };
   const easeMap = { again: -0.3, hard: -0.15, good: 0, easy: 0.15 };
 
   prev.ease = Math.max(1.3, prev.ease + easeMap[rating]);
@@ -162,7 +185,7 @@ function showResults() {
 
   const { again, hard, good, easy } = fc.stats;
   const total = again + hard + good + easy;
-  const pct = total > 0 ? Math.round(((good + easy) / total) * 100) : 0;
+  const pct   = total > 0 ? Math.round(((good + easy) / total) * 100) : 0;
 
   document.getElementById('fc-results-grid').innerHTML = `
     <div class="fc-results-stat"><div class="big" style="color:var(--red)">${again}</div><div class="lbl">Again</div></div>
@@ -202,13 +225,9 @@ function backToSetup() {
 }
 
 document.addEventListener('keydown', e => {
-  const studyActive = document.getElementById('fc-study').classList.contains('active');
+  const studyActive = document.getElementById('fc-study')?.classList.contains('active');
   if (!studyActive) return;
-
-  if (e.key === ' ' || e.key === 'Enter') {
-    e.preventDefault();
-    if (!fc.flipped) flipCard();
-  }
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!fc.flipped) flipCard(); }
   if (fc.flipped) {
     if (e.key === '1') rateCard('again');
     if (e.key === '2') rateCard('hard');
@@ -216,3 +235,8 @@ document.addEventListener('keydown', e => {
     if (e.key === '4') rateCard('easy');
   }
 });
+
+function escapeHTML(s) {
+  return String(s ?? '').replace(/[&<>"']/g,
+    m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
