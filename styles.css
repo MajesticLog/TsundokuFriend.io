@@ -382,15 +382,26 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 @media (max-width: 700px) { .lookup-grid { grid-template-columns: 1fr; } }
 
 /* ── Word Lists ──────────────────────────────────── */
-.lists-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; min-height: 60vh; }
+.lists-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; min-height: 60vh; align-items: start; }
 @media (max-width: 700px) { .lists-layout { grid-template-columns: 1fr; } }
 
-.new-book-form { display: flex; gap: 6px; margin-bottom: 14px; }
-.new-book-form input { flex: 1; font-size: 0.9rem; }
+.new-book-form { display: flex; gap: 6px; margin-bottom: 14px; align-items: center; }
+.new-book-form input { flex: 1; font-size: 0.9rem; min-width: 0; }
+.new-book-form .btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+}
 
 .book-list { display: flex; flex-direction: column; gap: 6px; }
 .book-item {
-  padding: 10px 16px;
+  padding: 10px 14px;
   background: transparent;
   border: var(--stroke) solid var(--border);
   border-radius: var(--radius-box);
@@ -398,10 +409,13 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
   font-family: 'Kosugi Maru', sans-serif;
   font-size: 0.88rem;
   transition: border-color 140ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 .book-item:hover  { border-color: var(--border-strong); }
 .book-item.active { border-color: var(--accent-stroke); }
-.book-item .book-count { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.book-item .book-count { font-size: 0.72rem; color: var(--muted); }
 
 .words-table { width: 100%; border-collapse: collapse; }
 .words-table th {
@@ -599,6 +613,18 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
   opacity: 0.7;
 }
 .radical-btn.selected .strokes { color: var(--accent-stroke); opacity: 1; }
+
+/* Kanji result buttons in radical panel */
+.radical-kanji-btn {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1.15rem;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 /* ── Flashcards ──────────────────────────────────── */
 .fc-setup { max-width: 560px; margin: 0 auto; }

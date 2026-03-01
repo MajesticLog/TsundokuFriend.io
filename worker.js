@@ -1,13 +1,13 @@
 /**
  * Cloudflare Worker: minireader
- * GET  /?keyword=...   -> proxy to Jisho API
- * POST /handwrite      -> proxy to Google Input Tools handwriting
+ * GET  /?keyword=...   -> Jotoba.de (open-source Jisho alternative, CORS-friendly)
+ * POST /handwrite      -> Google Input Tools handwriting proxy
  *
- * WHY 403:
- * Jisho detects bot/datacenter traffic via missing browser headers and blocks
- * it with a 403. The fix is to send a realistic browser request — full
- * User-Agent, Accept, Accept-Language, Referer, and sec-fetch headers —
- * so Jisho's WAF treats the request as legitimate.
+ * WHY JOTOBA instead of Jisho:
+ * Jisho blocks requests from Cloudflare Workers with HTTP 403 regardless of
+ * headers. Jotoba (jotoba.de) is an open-source Japanese dictionary with a
+ * proper public API, CORS enabled, no authentication required.
+ * API docs: https://jotoba.de/docs.html
  */
 
 export default {
@@ -18,7 +18,7 @@ export default {
       return new Response(null, { headers: corsHeaders() });
     }
 
-    // ── Handwriting proxy ─────────────────────────────────────────────────
+    // ── Handwriting proxy ──────────────────────────────────────────────────
     if (url.pathname === "/handwrite") {
       if (request.method !== "POST") return json({ error: "Use POST" }, 405);
 
@@ -52,85 +52,81 @@ export default {
       });
     }
 
-    // ── Jisho proxy ───────────────────────────────────────────────────────
+    // ── Dictionary proxy (Jotoba) ──────────────────────────────────────────
     const keyword = url.searchParams.get("keyword") || "";
     if (!keyword) return json({ error: "Missing keyword" }, 400);
 
-    // Edge cache — serve stale on upstream failure
+    // Edge cache
     const cache = caches.default;
     const cacheKey = new Request(
-      "https://cache.minireader.local/v3?kw=" + encodeURIComponent(keyword),
+      "https://cache.minireader.local/jotoba?kw=" + encodeURIComponent(keyword),
       { method: "GET" }
     );
     const cached = await cache.match(cacheKey);
 
-    const jishoURL =
-      "https://jisho.org/api/v1/search/words?keyword=" + encodeURIComponent(keyword);
-
-    // Spoof a real browser request. Jisho's WAF checks these headers.
-    const browserHeaders = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      "Accept": "application/json, text/plain, */*",
-      "Accept-Language": "en-US,en;q=0.9,ja;q=0.8",
-      "Accept-Encoding": "gzip, deflate, br",
-      "Referer": "https://jisho.org/",
-      "Origin": "https://jisho.org",
-      "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-      "sec-ch-ua-mobile": "?0",
-      "sec-ch-ua-platform": '"Windows"',
-      "sec-fetch-dest": "empty",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-site": "same-origin",
-      "Connection": "keep-alive",
-    };
-
-    let lastErr = "";
-    for (let i = 0; i < 2; i++) {
-      let upstream;
-      try {
-        upstream = await fetch(jishoURL, { headers: browserHeaders });
-      } catch (e) {
-        lastErr = String(e);
-        continue;
-      }
-
-      if (upstream.ok) {
-        const text = await upstream.text();
-        const resp = new Response(text, {
-          status: 200,
-          headers: {
-            ...corsHeaders(),
-            "Content-Type": "application/json; charset=utf-8",
-            "Cache-Control": "public, max-age=600",
-          },
-        });
-        ctx.waitUntil(cache.put(cacheKey, resp.clone()));
-        return resp;
-      }
-
-      lastErr = `HTTP ${upstream.status}`;
-      // Don't retry on definitive rejections
-      if ([403, 404, 400, 401].includes(upstream.status)) break;
-      await sleep(200);
-    }
-
-    // Serve stale cache as fallback
-    if (cached) {
-      const stale = await cached.text();
-      return new Response(stale, {
-        status: 200,
+    let upstream;
+    try {
+      upstream = await fetch("https://jotoba.de/api/search/words", {
+        method: "POST",
         headers: {
-          ...corsHeaders(),
-          "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "public, max-age=60",
-          "X-Served-From": "stale-cache",
+          "Content-Type": "application/json",
+          "Accept": "application/json",
         },
+        body: JSON.stringify({ query: keyword, no_english: false, language: "English" }),
       });
+    } catch (e) {
+      if (cached) return cachedResponse(await cached.text());
+      return json({ error: "UPSTREAM_FETCH_FAILED", detail: String(e) }, 502);
     }
 
-    return json({ error: "JISHO_UNAVAILABLE", detail: lastErr }, 502);
+    if (!upstream.ok) {
+      if (cached) return cachedResponse(await cached.text());
+      return json({ error: "JOTOBA_UNAVAILABLE", detail: `HTTP ${upstream.status}` }, 502);
+    }
+
+    const jotobaData = await upstream.json();
+
+    // Normalise Jotoba response → Jisho-compatible shape so the frontend
+    // doesn't need changes. Jotoba words look like:
+    // { reading: { kana, kanji }, senses: [{ glosses, pos }], jlpt_lvl }
+    const data = (jotobaData.words || []).map(w => ({
+      japanese: [{
+        word:    w.reading?.kanji || w.reading?.kana || "",
+        reading: w.reading?.kana  || "",
+      }],
+      senses: (w.senses || []).map(s => ({
+        english_definitions: s.glosses || [],
+        parts_of_speech:     s.pos ? [s.pos] : [],
+      })),
+      jlpt: w.jlpt_lvl ? [`jlpt-n${w.jlpt_lvl}`] : [],
+      is_common: w.common || false,
+    }));
+
+    const respBody = JSON.stringify({ meta: { status: 200 }, data });
+    const resp = new Response(respBody, {
+      status: 200,
+      headers: {
+        ...corsHeaders(),
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "public, max-age=600",
+      },
+    });
+    ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+    return resp;
   },
 };
+
+function cachedResponse(text) {
+  return new Response(text, {
+    status: 200,
+    headers: {
+      ...corsHeaders(),
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=60",
+      "X-Served-From": "stale-cache",
+    },
+  });
+}
 
 function corsHeaders() {
   return {
@@ -145,8 +141,4 @@ function json(obj, status = 200) {
     status,
     headers: { ...corsHeaders(), "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
-}
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
 }

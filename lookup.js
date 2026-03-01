@@ -3,7 +3,7 @@
 ========================= */
 
 const JISHO_API = (window.TSUNDOKU_CONFIG && window.TSUNDOKU_CONFIG.jishoApi)
-  || "https://jisho.org/api/v1/search/words?keyword=";
+  || "https://minireader.zoe-caudron.workers.dev/?keyword=";
 
 document.getElementById('search-input')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') lookupWord();
@@ -24,7 +24,7 @@ async function lookupWord(queryOverride) {
   } catch (e) {
     if (res) {
       res.innerHTML =
-        `<p class="status-msg">⚠️ Could not reach Jisho. Try: ` +
+        `<p class="status-msg">⚠️ Dictionary lookup failed. Try searching directly: ` +
         `<a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noreferrer"
            style="color:var(--accent-stroke)">jisho.org ↗</a></p>`;
     }
