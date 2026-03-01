@@ -592,7 +592,6 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 }
 .radical-btn {
   width: 38px; height: 38px;
-  padding: 0;
   display: flex; align-items: center; justify-content: center;
   font-family: 'Kosugi Maru', sans-serif;
   font-size: 1.15rem;
@@ -1077,3 +1076,138 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 }
 .shelf-modal-row .modal-section { min-width: 140px; }
 
+
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE  (≤ 640 px  — iPhone SE through iPhone Pro Max)
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+
+  /* ── Topbar ─────────────────────────────────────────── */
+  .topbar          { padding: 9px 14px; gap: 8px; }
+  .topbar h1       { font-size: 1.05rem; letter-spacing: 0.03em; }
+  .tagline         { display: none; }            /* too cramped on small screens */
+  .topbar-right    { gap: 8px; }
+  .sync-btn        { font-size: 0.7rem !important;
+                     padding: 3px 8px !important; }
+  .theme-dot       { width: 14px !important; height: 14px !important;
+                     min-width: 14px !important; }
+
+  /* ── Nav — single scrollable row, no wrapping ───────── */
+  nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;       /* Firefox */
+    padding: 6px 10px;
+    gap: 4px;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Main container ─────────────────────────────────── */
+  main { padding: 12px 10px; }
+
+  /* ── Cards ──────────────────────────────────────────── */
+  .card         { padding: 14px 13px; }
+  .card h2      { font-size: 0.7rem; margin-bottom: 10px; padding-bottom: 6px; }
+
+  /* ── Buttons ─────────────────────────────────────────── */
+  .btn    { padding: 8px 14px;  font-size: 0.85rem; }
+  .btn-sm { padding: 5px 10px;  font-size: 0.78rem; }
+
+  /* ── Search bar ─────────────────────────────────────── */
+  .search-bar       { gap: 6px; margin-bottom: 12px; }
+  .search-bar input { font-size: 0.95rem; padding: 8px 12px; }
+  .search-bar .btn  { padding: 8px 12px; }
+
+  /* ── Lookup results ─────────────────────────────────── */
+  .lookup-grid      { grid-template-columns: 1fr; gap: 12px; }
+  .kanji-large      { font-size: 2.2rem !important; }
+  .result-entry     { padding: 10px 0; }
+  .add-btn          { flex-wrap: wrap; gap: 6px; }
+  .add-btn select   { max-width: 100% !important; width: 100%; }
+
+  /* Quick notes */
+  #quick-notes { min-height: 100px !important; font-size: 0.9rem !important; }
+
+  /* ── Books / Shelf ──────────────────────────────────── */
+  .shelf-layout    { grid-template-columns: 1fr; gap: 12px; }
+  .shelf-add-bar   { flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .shelf-add-bar input { width: 100%; min-width: 0; }
+  .shelf-sidebar   { max-height: 220px; overflow-y: auto; }
+  .shelf-detail    { min-height: 0; }
+
+  /* ── Handwriting canvases ───────────────────────────── */
+  .writing-layout,
+  .writing-layout.writing-two { grid-template-columns: 1fr; gap: 12px; }
+  .canvas-wrap canvas {
+    width:  100% !important;
+    height: 240px !important;
+  }
+  .brush-row { gap: 6px; }
+  .brush-row input[type="range"] { width: 90px; }
+  .candidate-row  { gap: 5px; flex-wrap: wrap; }
+  .hw-build       { padding: 12px; }
+
+  /* ── Radicals ───────────────────────────────────────── */
+  .radical-layout { grid-template-columns: 1fr; gap: 12px; }
+  .radical-grid   { max-height: 200px; }
+
+  /* ── Flashcards ─────────────────────────────────────── */
+  .fc-setup .card { padding: 14px 12px; }
+  .fc-book-grid   { gap: 6px; }
+  .fc-book-opt    { font-size: 0.82rem; padding: 6px 10px; }
+
+  .fc-study.active  { gap: 14px; padding: 10px 0; }
+  .fc-card-scene    { height: 240px !important; max-width: 100%; }
+  .fc-word          { font-size: 3.6rem !important; line-height: 1.1; }
+  .fc-word-back     { font-size: 2rem   !important; }
+  .fc-meaning-back  { font-size: 0.95rem !important; }
+  .fc-reading-back  { font-size: 0.85rem !important; }
+  .fc-hint          { font-size: 0.62rem; }
+  .fc-tap-hint      { font-size: 0.72rem; }
+
+  .fc-ratings       { gap: 6px; }
+  .fc-rating-btn    { padding: 10px 6px !important; min-width: 70px !important; }
+  .fc-rating-btn .sub { display: none; }   /* hide Japanese sub-labels */
+  .fc-rating-btn .label { font-size: 0.82rem; }
+
+  .fc-progress-bar-wrap { gap: 8px; font-size: 0.78rem; }
+  .fc-session-stats     { gap: 10px; }
+  .fc-stat .val         { font-size: 1.1rem; }
+  .fc-shortcuts         { display: none; }  /* keyboard shortcuts irrelevant on touch */
+
+  /* ── Modals ─────────────────────────────────────────── */
+  .modal {
+    margin: 10px;
+    padding: 18px 15px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: var(--radius-box);
+  }
+  .modal h2       { font-size: 0.88rem; }
+  .modal-section  { margin-bottom: 12px; }
+  .modal-input    { font-size: 0.88rem; padding: 7px 10px; }
+  .modal-footer   { gap: 8px; }
+  .shelf-modal-row { flex-direction: column; gap: 0; }
+
+  /* ── Misc ───────────────────────────────────────────── */
+  .status-msg  { font-size: 0.82rem; }
+  .empty-state { font-size: 0.84rem; }
+  .words-table { font-size: 0.82rem; }
+  .mini-row    { gap: 4px; font-size: 0.85rem; }
+
+}
+
+/* ── Landscape phone (wide but short) ────────────────── */
+@media (max-height: 500px) and (max-width: 900px) {
+  .fc-card-scene { height: 180px !important; }
+  .topbar        { padding: 5px 14px; }
+  nav            { padding: 3px 10px; }
+}

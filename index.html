@@ -3,21 +3,27 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>積読フレンド ♥ </title>
+<meta name="theme-color" content="#CAC4F6"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="積読フレンド"/>
+
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
 <meta property="og:title" content="積読フレンド ♥"/>
-<meta property="og:description" content="Japanese reading companion — look up words, track books, practice kanji"/>
+<meta property="og:description" content="Japanese reading companion — look up words, track books, practise kanji"/>
 <meta property="og:type" content="website"/>
-<meta property="og:image" content="https://majesticlog.github.io/favicon.png"/>
+<meta property="og:image" content="https://majesticlog.github.io/plumheart.svg"/>
 <meta property="og:url" content="https://majesticlog.github.io/"/>
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="積読フレンド ♥"/>
-<meta name="twitter:description" content="Japanese reading companion — look up words, track books, practice kanji"/>
-<meta name="twitter:image" content="https://majesticlog.github.io/favicon.png"/>
-<link rel="apple-touch-icon" href="favicon.png"/>
+<meta name="twitter:description" content="Japanese reading companion — look up words, track books, practise kanji"/>
+<meta name="twitter:image" content="https://majesticlog.github.io/plumheart.svg"/>
+<link rel="icon" href="plumheart.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="plumheart.svg"/>
 <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
@@ -27,7 +33,7 @@
 </div>
 <div class="topbar-right">
 <span class="tagline">Japanese Reading Companion</span>
-<button class="btn btn-sm btn-outline sync-btn" onclick="openSyncPanel()" title="Backup &amp; restore data" style="font-size:0.75rem;padding:4px 10px;opacity:0.7">⬆⬇ Sync</button>
+<button class="btn btn-sm btn-outline sync-btn" onclick="openSyncPanel()" title="Backup &amp; restore" style="font-size:0.75rem;padding:4px 10px;opacity:0.75">⬆⬇</button>
 <div aria-label="Theme" class="theme-dots">
 <button aria-label="Flowers theme" class="theme-dot" data-theme="flowers" title="Flowers" type="button"></button>
 <button aria-label="Joyful theme" class="theme-dot" data-theme="joyful" title="Joyful" type="button"></button>
@@ -56,7 +62,7 @@
 </div>
 <div class="card">
 <h2>Quick Notes — メモ</h2>
-<textarea id="quick-notes" placeholder="Jot down notes, sentences, context…" oninput="localStorage.setItem('tsundoku-notes',this.value)" style="width:100%;min-height:200px;font-family:'Kosugi Maru',sans-serif;font-size:0.95rem;line-height:1.9;padding:12px;outline:none;resize:vertical;"></textarea>
+<textarea id="quick-notes" oninput="localStorage.setItem('tsundoku-notes',this.value)" placeholder="Jot down notes, sentences, context…" style="width:100%;min-height:200px;font-family:'Kosugi Maru',sans-serif;font-size:0.95rem;line-height:1.9;padding:12px;outline:none;resize:vertical;"></textarea>
 </div>
 </div>
 </div>
@@ -302,35 +308,39 @@
 </div>
 </div>
 
-<!-- ── SYNC / BACKUP MODAL ── -->
+<!-- ── SYNC MODAL ── -->
 <div class="modal-overlay" id="sync-modal">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:440px">
     <h2>Backup &amp; Restore — データ保存</h2>
-    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:18px">
-      Export your books, vocab, and notes as a JSON file to back up or move to another device.
-      Import to restore from a backup.
+    <p style="font-size:0.84rem;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      Your data lives in <em>your</em> browser — every visitor has their own
+      private copy automatically. Use export/import to move your data between
+      your own devices (AirDrop, email, iCloud Drive…).
     </p>
-
     <div class="modal-section">
       <label>Export all data</label>
-      <button class="btn btn-sm" onclick="exportAllData()" style="width:100%">⬇ Download backup.json</button>
+      <button class="btn btn-sm" onclick="exportAllData()" style="width:100%;margin-top:6px">
+        ⬇ Download backup.json
+      </button>
     </div>
-
-    <div class="modal-section" style="margin-top:14px">
+    <div class="modal-section" style="margin-top:12px">
       <label>Import from backup</label>
-      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px">
-        ⚠ This will <strong>merge</strong> imported books with your current data (no duplicates by id).
+      <p style="font-size:0.78rem;color:var(--muted);margin:4px 0 8px">
+        Merges new books into your current data — nothing is overwritten.
       </p>
-      <input type="file" id="sync-file-input" accept=".json" style="display:none" onchange="importAllData(event)"/>
-      <button class="btn btn-sm btn-outline" onclick="document.getElementById('sync-file-input').click()" style="width:100%">⬆ Choose backup.json…</button>
+      <input type="file" id="sync-file-input" accept=".json"
+             style="display:none" onchange="importAllData(event)"/>
+      <button class="btn btn-sm btn-outline"
+              onclick="document.getElementById('sync-file-input').click()"
+              style="width:100%">⬆ Choose backup.json…</button>
       <p id="sync-status" style="font-size:0.82rem;margin-top:8px;color:var(--muted)"></p>
     </div>
-
-    <div class="modal-footer" style="margin-top:18px">
+    <div class="modal-footer" style="margin-top:16px">
       <button class="btn btn-sm btn-outline" onclick="closeSyncPanel()">Close</button>
     </div>
   </div>
 </div>
+
 </main>
 <script defer="" src="state.js"></script>
 <script defer="" src="nav.js"></script>
