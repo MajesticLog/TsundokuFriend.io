@@ -71,12 +71,13 @@ function renderResults(entries) {
         <select class="lookup-book-select" id="bk-${uid}" style="max-width:200px">
           ${allOpts}
         </select>
-        <button class="btn btn-sm"
-          onclick='addToSelectedBook(${JSON.stringify(word)}, ${JSON.stringify(reading)}, ${JSON.stringify(meanings)}, "bk-${uid}", ${JSON.stringify(jlpt)})'>
-          + Add to book
-        </button>
+        <button class="btn btn-sm add-to-book-btn">+ Add to book</button>
       </div>`;
     res.appendChild(div);
+    // Wire up button via addEventListener — avoids ALL quoting/apostrophe issues in onclick HTML
+    div.querySelector('.add-to-book-btn').addEventListener('click', () => {
+      addToSelectedBook(word, reading, meanings, 'bk-' + uid, jlpt);
+    });
   });
 }
 
