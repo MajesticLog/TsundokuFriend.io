@@ -46,7 +46,9 @@ function renderResults(entries) {
     const word     = entry.japanese[0]?.word || entry.japanese[0]?.reading || '';
     const reading  = entry.japanese[0]?.reading || '';
     const meanings = entry.senses[0]?.english_definitions?.join('; ') || '';
-    const tags     = [...(entry.senses[0]?.parts_of_speech || [])].slice(0,2).join(', ');
+    const tags     = [...(entry.senses[0]?.parts_of_speech || [])]
+                     .map(p => typeof p === 'string' ? p : (Object.keys(p||{})[0] || ''))
+                     .filter(Boolean).slice(0, 2).join(', ');
     const jlpt     = entry.jlpt?.[0] || '';
     const uid      = 'res' + i;   // guaranteed unique, no kanji collision
 

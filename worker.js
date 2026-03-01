@@ -113,6 +113,17 @@ export default {
 };
 
 // ── Normalise Jotoba → Jisho shape ─────────────────────────────────────────
+// Jotoba pos can be: string | object {Tag: value} | array of those — flatten to strings
+function posToStrings(pos) {
+  if (!pos) return [];
+  const items = Array.isArray(pos) ? pos : [pos];
+  return items.map(p => {
+    if (typeof p === 'string') return p;
+    if (typeof p === 'object' && p !== null) return Object.keys(p)[0] || '';
+    return String(p);
+  }).filter(Boolean);
+}
+
 function normaliseJotoba(words) {
   return words.map(w => ({
     japanese: [{
@@ -121,7 +132,7 @@ function normaliseJotoba(words) {
     }],
     senses: (w.senses || []).map(s => ({
       english_definitions: s.glosses || [],
-      parts_of_speech:     s.pos ? [s.pos] : [],
+      parts_of_speech:     posToStrings(s.pos),
     })),
     jlpt:      w.jlpt_lvl ? [`jlpt-n${w.jlpt_lvl}`] : [],
     is_common: w.common || false,
