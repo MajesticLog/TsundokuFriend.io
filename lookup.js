@@ -24,7 +24,7 @@ async function lookupWord(queryOverride) {
   } catch (e) {
     if (res) {
       res.innerHTML =
-        `<p class="status-msg">⚠️ Dictionary lookup failed. Try searching directly: ` +
+        `<p class="status-msg">⚠️ Dictionary lookup failed. Try typing in kana or searching directly: ` +
         `<a href="https://jisho.org/search/${encodeURIComponent(q)}" target="_blank" rel="noreferrer"
            style="color:var(--accent-stroke)">jisho.org ↗</a></p>`;
     }
