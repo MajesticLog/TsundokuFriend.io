@@ -8,7 +8,8 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
-<link href="styles.css" rel="stylesheet"/>
+<link rel="icon" type="image/svg+xml" href="plumheart.svg"/>
+  <link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
 <header class="topbar">
@@ -17,7 +18,8 @@
 </div>
 <div class="topbar-right">
 <span class="tagline">Japanese Reading Companion</span>
-<button class="btn btn-sm" onclick="openWkSettings()" style="font-size:0.7rem;padding:4px 10px;margin-right:6px" title="WaniKani Settings">WK ⚙</button>
+<button class="btn btn-sm" onclick="openSyncPanel()" style="font-size:0.7rem;padding:4px 10px;margin-right:4px" title="Backup &amp; Restore">⇅ Sync</button>
+    <button class="btn btn-sm" onclick="openWkSettings()" style="font-size:0.7rem;padding:4px 10px;margin-right:6px" title="WaniKani Settings">WK ⚙</button>
 <div aria-label="Theme" class="theme-dots">
 <button aria-label="Flowers theme" class="theme-dot" data-theme="flowers" title="Flowers" type="button"></button>
 <button aria-label="Joyful theme" class="theme-dot" data-theme="joyful" title="Joyful" type="button"></button>
@@ -342,6 +344,7 @@
 </div>
 </main>
 <script defer="" src="state.js"></script>
+  <script defer="" src="sync.js"></script>
 <script defer="" src="nav.js"></script>
 <script defer="" src="lookup.js"></script>
 <script defer="" src="books.js"></script>
@@ -379,4 +382,30 @@
     </div>
   </div>
 </div>
+
+  <!-- ── SYNC MODAL ── -->
+  <div class="modal-overlay" id="sync-modal">
+    <div class="modal-box" style="max-width:420px">
+      <div class="modal-header">
+        <h3>Backup &amp; Restore</h3>
+        <button class="modal-close" onclick="closeSyncPanel()">✕</button>
+      </div>
+      <div style="padding:16px 20px 20px">
+        <p style="margin:0 0 14px;font-size:0.85rem;line-height:1.6;opacity:0.8">
+          Your data lives only in <em>this browser</em>. Export a JSON backup to transfer
+          to another device, or import one to merge data.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn" onclick="exportAllData()">⬇ Export JSON backup</button>
+          <label class="btn btn-outline" style="cursor:pointer;text-align:center">
+            ⬆ Import JSON backup
+            <input type="file" accept=".json" onchange="importAllData(event)" style="display:none"/>
+          </label>
+        </div>
+        <p id="sync-status" style="margin:12px 0 0;font-size:0.85rem;min-height:1.2em"></p>
+      </div>
+    </div>
+  </div>
+  <!-- hidden quick-notes for sync.js notes merge -->
+  <textarea id="quick-notes" style="display:none"></textarea>
 </body></html>

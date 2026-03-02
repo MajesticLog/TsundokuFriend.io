@@ -169,21 +169,30 @@ function renderVocabTable(entry) {
     return `<p class="status-msg" style="margin:0">No words match "<em>${shelfEsc(shelfVocabFilter)}</em>".</p>`;
   }
 
+  const hasWk = !!localStorage.getItem('wk-token');
   let rows = words.map((w, i) => {
-    // find real index for deletion
     const realIdx = entry.vocab.indexOf(w);
+    const jlptCell = w.jlpt
+      ? `<td class="jlpt-cell"><span class="jlpt-badge jlpt-sm">${w.jlpt.toUpperCase()}</span></td>`
+      : '<td class="jlpt-cell">—</td>';
+    const wkCell = hasWk
+      ? (w.wk_level != null
+          ? `<td class="wk-cell"><span class="wk-badge-sm">L${w.wk_level}</span></td>`
+          : '<td class="wk-cell">—</td>')
+      : '';
     return `<tr>
       <td class="kanji-cell">${shelfEsc(w.word)}</td>
       <td class="reading-cell">${shelfEsc(w.reading)}</td>
       <td class="meaning-cell">${shelfEsc(w.meaning)}</td>
-      ${w.jlpt ? '<td class="jlpt-cell"><span class="jlpt-badge jlpt-sm">' + w.jlpt.toUpperCase() + '</span></td>' : '<td class="jlpt-cell">—</td>'}
-      + (w.wk_level != null ? '<td class="wk-cell"><span class="wk-badge-sm">L' + w.wk_level + '</span></td>' : '<td class="wk-cell">—</td>')
+      ${jlptCell}
+      ${wkCell}
       <td class="action-cell"><button class="del-btn" onclick="removeShelfWord('${entry.id}', ${realIdx})" title="Remove">✕</button></td>
     </tr>`;
   }).join('');
 
+  const wkHeader = hasWk ? '<th>WK</th>' : '';
   return `<table class="words-table">
-    <thead><tr><th>Word</th><th>Reading</th><th>Meaning</th><th>JLPT</th><th>WK</th><th></th></tr></thead>
+    <thead><tr><th>Word</th><th>Reading</th><th>Meaning</th><th>JLPT</th>${wkHeader}<th></th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }

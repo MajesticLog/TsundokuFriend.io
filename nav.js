@@ -22,6 +22,7 @@ function showPanel(id, btn) {
   try { if (id === 'writing' && typeof hwResizeAll === 'function') {
     requestAnimationFrame(() => requestAnimationFrame(hwResizeAll));
   } } catch(e) { console.error(e); }
+  try { if (id === 'reader' && typeof initReader === 'function') initReader(); } catch(e) { console.error(e); }
   try {
     if (id === 'flashcards') {
       const setup = document.getElementById('fc-setup');
