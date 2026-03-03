@@ -647,21 +647,30 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
   gap: 24px;
   align-items: start;
 }
+.radical-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 4px;
+  width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.stroke-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  width: 100%;
+}
 @media (max-width: 900px) {
   /* Tablet and below: picker on top, build word below */
   .radical-layout {
     grid-template-columns: 1fr;
   }
   .radical-grid {
-    max-height: none !important;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-  }
-  .stroke-filter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 8px;
+    max-height: none;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
   }
 }
 
@@ -1302,6 +1311,7 @@ td.jlpt-cell { white-space: nowrap; }
 
   /* ── Radicals ───────────────────────────────────────── */
   .radical-layout { grid-template-columns: 1fr; gap: 12px; }
+  .radical-grid { max-height: 60vh; }
 
   /* ── Flashcards ─────────────────────────────────────── */
   .fc-setup .card { padding: 14px 12px; }
