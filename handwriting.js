@@ -257,7 +257,8 @@ async function hwRecognize(slot) {
 
 function hwExtractCandidates(resp) {
   const out = [];
-  const isJP = s => typeof s === 'string' && /[\u3040-\u30ff\u3400-\u9fff]/.test(s);
+  // Match kanji, hiragana, katakana — including mixed kanji+okurigana like 書く, 飲み物
+  const isJP = s => typeof s === 'string' && /[\u3040-\u30ff\u3400-\u9fff\uff65-\uff9f]/.test(s);
   function walk(node) {
     if (!node) return;
     if (Array.isArray(node)) {
@@ -269,8 +270,11 @@ function hwExtractCandidates(resp) {
     if (typeof node === 'object') Object.values(node).forEach(walk);
   }
   walk(resp);
-  const singles = [...new Set(out)].filter(s => s.length === 1);
-  return singles.length ? singles : [...new Set(out)];
+  const unique = [...new Set(out)];
+  // Show single kanji/kana first, then multi-char (okurigana, kana words) after
+  const singles = unique.filter(s => s.length === 1);
+  const multi   = unique.filter(s => s.length > 1);
+  return singles.length ? [...singles, ...multi] : multi;
 }
 
 function hwRenderCandidates(outEl, candidates) {
