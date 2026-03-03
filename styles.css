@@ -539,6 +539,10 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(3px);
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
 }
 .modal-overlay.open { display: flex; }
 .modal {
@@ -1538,4 +1542,53 @@ input[type="checkbox"]:focus-visible {
   .reader-article-btn { padding: 9px 11px; font-size: 0.84rem; }
   .reader-body { font-size: 1rem; line-height: 2.2; }
   .example-sentence { padding: 7px 10px; }
+}
+
+
+/* ── Mobile optimisation pass ───────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Sources modal */
+  #sources-modal .modal-box { margin: 12px; }
+  #sources-modal .modal-box a { color: var(--accent-stroke); }
+
+  /* Vocab table — horizontal scroll so it doesn't squeeze */
+  .words-table-wrap,
+  .shelf-detail     { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .words-table      { min-width: 460px; }
+
+  /* Reader article list thumbnails — smaller on mobile */
+  .reader-article-thumb { width: 48px; height: 36px; }
+
+  /* Reader article title — allow wrapping on small screens */
+  .reader-article-title { white-space: normal; }
+
+  /* Reader body — tighter line height for small screens */
+  .reader-body p    { margin-bottom: 0.9em; }
+
+  /* Handwriting hw-word-suggestions wraps cleanly */
+  .hw-word-suggestions { gap: 6px; flex-wrap: wrap; }
+  .hw-suggestion-btn   { font-size: 1rem; padding: 6px 10px; }
+
+  /* Radicals grid — more columns so grid isn't too sparse */
+  .radical-grid { grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); }
+
+  /* Flashcard rating buttons full-width row on very small screens */
+  .fc-ratings { flex-wrap: wrap; }
+  .fc-rating-btn { flex: 1; min-width: 60px !important; }
+
+  /* Footer wraps gracefully */
+  footer { line-height: 2.2; padding: 16px 12px 24px; }
+
+  /* Modal box full-width on small screens */
+  .modal-box { margin: 8px !important; max-width: calc(100vw - 16px) !important; }
+
+  /* Topbar WK button text hidden, show icon only */
+  .wk-connect-btn span.wk-label { display: none; }
+}
+
+@media (max-width: 400px) {
+  /* Very small phones — nav text even smaller */
+  nav button { font-size: 0.68rem; padding: 4px 8px; }
+  .fc-word   { font-size: 3rem !important; }
 }

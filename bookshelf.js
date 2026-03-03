@@ -191,7 +191,7 @@ function renderVocabTable(entry) {
   }).join('');
 
   const wkHeader = hasWk ? '<th title="WaniKani level — shown only for words in WK curriculum">WK</th>' : '';
-  return `<table class="words-table">
+  return `<div class="words-table-wrap"><table class="words-table">
     <thead><tr><th>Word</th><th>Reading</th><th>Meaning</th><th>JLPT</th>${wkHeader}<th></th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;

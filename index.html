@@ -390,5 +390,51 @@
     Vibecoded with <a href="https://claude.ai" target="_blank" rel="noreferrer" style="color:inherit;text-decoration:underline">Claude</a>
     &nbsp;·&nbsp;
     by <a href="https://lifeasaplant.com" target="_blank" rel="noreferrer" style="color:inherit;text-decoration:underline">lifeasaplant.com</a>
+    &nbsp;·&nbsp;
+    <button onclick="document.getElementById('sources-modal').classList.add('open')" style="background:none;border:none;font:inherit;color:inherit;cursor:pointer;text-decoration:underline;padding:0;opacity:1">Sources</button>
   </footer>
+
+  <!-- ── SOURCES MODAL ── -->
+  <div class="modal-overlay" id="sources-modal">
+    <div class="modal-box" style="max-width:500px">
+      <div class="modal-header">
+        <h3>Sources &amp; Credits</h3>
+        <button class="modal-close" onclick="document.getElementById('sources-modal').classList.remove('open')">✕</button>
+      </div>
+      <div style="padding:16px 20px 24px;font-size:0.85rem;line-height:1.9">
+
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin:0 0 8px">Dictionary</p>
+        <p style="margin:0 0 16px">
+          <a href="https://jotoba.de" target="_blank" rel="noreferrer">Jotoba</a> — Japanese dictionary API<br>
+          <a href="https://kanjiapi.dev" target="_blank" rel="noreferrer">KanjiAPI</a> — Kanji &amp; word data, JLPT levels<br>
+          <a href="https://www.wanikani.com" target="_blank" rel="noreferrer">WaniKani</a> — SRS level data (optional, via personal API token)
+        </p>
+
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin:0 0 8px">Graded Reader</p>
+        <p style="margin:0 0 16px">
+          <a href="https://nhkeasier.com" target="_blank" rel="noreferrer">NHK Easier</a> — NHK Easy News with furigana (N4/N3)<br>
+          Original articles: <a href="https://www3.nhk.or.jp/news/easy/" target="_blank" rel="noreferrer">NHK Web Easy</a>
+        </p>
+
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin:0 0 8px">Handwriting Recognition</p>
+        <p style="margin:0 0 16px">
+          <a href="https://www.google.com/inputtools/" target="_blank" rel="noreferrer">Google Input Tools</a> — Handwriting recognition API
+        </p>
+
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin:0 0 8px">Fonts</p>
+        <p style="margin:0 0 16px">
+          <a href="https://fonts.google.com/specimen/Kosugi+Maru" target="_blank" rel="noreferrer">Kosugi Maru</a> &amp;
+          <a href="https://fonts.google.com/specimen/Funnel+Display" target="_blank" rel="noreferrer">Funnel Display</a> via Google Fonts
+        </p>
+
+        <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin:0 0 8px">Built with</p>
+        <p style="margin:0">
+          <a href="https://claude.ai" target="_blank" rel="noreferrer">Claude</a> by Anthropic —
+          <a href="https://workers.cloudflare.com" target="_blank" rel="noreferrer">Cloudflare Workers</a> for the proxy API —
+          <a href="https://pages.github.com" target="_blank" rel="noreferrer">GitHub Pages</a> for hosting
+        </p>
+
+      </div>
+    </div>
+  </div>
 </body></html>
