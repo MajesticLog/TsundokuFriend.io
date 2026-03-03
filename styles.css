@@ -1041,36 +1041,56 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 
 /* Two-column layout */
 .shelf-layout {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 20px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 @media (max-width: 760px) {
-  .shelf-layout { grid-template-columns: 1fr; }
+
 }
 
 /* ── Left sidebar ─────────────────────────────────── */
 .shelf-sidebar {
-  border: var(--stroke) solid var(--border);
-  border-radius: var(--radius-box);
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+#shelf-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
 }
 
 .shelf-group-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 10px 14px 4px;
+  width: 100%;
+  text-align: center;
+  padding: 4px 0 2px;
 }
 
 .shelf-item {
-  padding: 11px 14px;
+  padding: 8px 16px;
   cursor: pointer;
-  border-bottom: var(--stroke) solid var(--border);
-  transition: background 120ms ease;
+  border: var(--stroke) solid var(--border);
+  border-radius: var(--radius-pill);
+  transition: background 120ms ease, border-color 120ms ease;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.shelf-item:hover {
+  border-color: var(--accent-stroke);
+  background: color-mix(in srgb, var(--accent-stroke) 8%, transparent);
+}
+.shelf-item.active {
+  border-color: var(--accent-stroke);
+  background: color-mix(in srgb, var(--accent-stroke) 12%, transparent);
 }
 .shelf-item:last-child { border-bottom: none; }
 .shelf-item:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
@@ -1078,8 +1098,7 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 
 .shelf-item-title {
   font-family: 'Kosugi Maru', sans-serif;
-  font-size: 0.92rem;
-  margin-bottom: 3px;
+  font-size: 0.88rem;
   line-height: 1.3;
 }
 .shelf-item-meta {
@@ -1335,10 +1354,10 @@ td.jlpt-cell { white-space: nowrap; }
   #quick-notes { min-height: 100px !important; font-size: 0.9rem !important; }
 
   /* ── Books / Shelf ──────────────────────────────────── */
-  .shelf-layout    { grid-template-columns: 1fr; gap: 12px; }
+  .shelf-layout    { gap: 10px; }
   .shelf-add-bar   { flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
   .shelf-add-bar input { width: 100%; min-width: 0 !important; }
-  .shelf-sidebar   { border: none; border-radius: 0; max-height: none; overflow: visible; padding: 0; }
+  .shelf-sidebar   { justify-content: center; }
   .shelf-detail    { min-height: 0; }
 
   /* ── Handwriting canvases ───────────────────────────── */
