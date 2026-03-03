@@ -41,19 +41,16 @@
 
 /* Theme 2 — Strawberry Matcha (commented out — too close to Flowers)
 :root[data-theme="joyful"] {
-  --bg:             #F5F2EC;       /* warm latte cream */
-  --accent:         #C8B8C8;       /* dusty rose-lavender — the strawberry milk layer */
-  --accent-2:       #8AAF6A;       /* matcha green */
-  --ink:            #2C2820;       /* warm dark espresso */
+  --bg:             #F5F2EC;
+  --accent:         #C8B8C8;
+  --accent-2:       #8AAF6A;
+  --ink:            #2C2820;
   --muted:          color-mix(in srgb, var(--ink) 50%, transparent);
-
   --border:         rgba(44,40,32,0.15);
   --border-strong:  rgba(44,40,32,0.28);
-  --accent-stroke:  #C07090;       /* strawberry pink for badges & links */
-  --accent2-stroke: #6A9448;       /* matcha green for secondary badges */
-
+  --accent-stroke:  #C07090;
+  --accent2-stroke: #6A9448;
   --ring: 0 0 0 3px rgba(192,112,144,0.25);
-
   --fc-back-bg:  #2C2820;
   --fc-back-ink: #F5F2EC;
 } */
