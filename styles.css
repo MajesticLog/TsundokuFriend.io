@@ -259,41 +259,7 @@ input[type=range] {
   width: 80px;
 }
 #panel-writing input[type=range] {
-  accent-color: transparent;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  background: var(--border);
-  border-radius: var(--radius-pill);
-  outline: none;
-  width: 80px;
-}
-#panel-writing input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: transparent;
-  border: var(--stroke) solid var(--accent-stroke);
-  cursor: pointer;
-  transition: background 120ms ease;
-}
-#panel-writing input[type=range]::-webkit-slider-thumb:hover {
-  background: color-mix(in srgb, var(--accent-stroke) 20%, transparent);
-}
-#panel-writing input[type=range]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: transparent;
-  border: var(--stroke) solid var(--accent-stroke);
-  cursor: pointer;
-}
-#panel-writing input[type=range]::-moz-range-track {
-  background: var(--border);
-  border-radius: var(--radius-pill);
-  height: 4px;
+  accent-color: var(--accent-stroke);
 }
 input[type=color] {
   width: 32px;
@@ -1284,7 +1250,7 @@ td.jlpt-cell { white-space: nowrap; }
   display: inline-block;
   font-size: 0.68rem;
   font-family: 'Funnel Display', sans-serif;
-  border: var(--stroke) solid var(--accent2-stroke);
+  border: var(--stroke) solid var(--accent-stroke);
   border-radius: var(--radius-pill);
   padding: 2px 8px;
   letter-spacing: 0.06em;
@@ -1302,7 +1268,7 @@ td.jlpt-cell { white-space: nowrap; }
 .wk-badge-sm {
   font-size: 0.65rem;
   font-family: 'Funnel Display', sans-serif;
-  border: var(--stroke) solid var(--accent2-stroke);
+  border: var(--stroke) solid var(--accent-stroke);
   border-radius: var(--radius-pill);
   padding: 2px 7px;
   letter-spacing: 0.06em;
