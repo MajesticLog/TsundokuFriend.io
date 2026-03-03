@@ -1314,19 +1314,47 @@ td.jlpt-cell { white-space: nowrap; }
 }
 .reader-article-btn {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  width: 100%;
+  align-items: center;
+  gap: 12px;
   text-align: left;
+  width: 100%;
   padding: 10px 14px;
-  background: var(--page-bg, #f5f2eb);
-  border: 1.5px solid var(--card-stroke);
+  background: color-mix(in srgb, var(--bg) 60%, var(--border) 40%);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
-  font-size: 0.9rem;
   transition: background 0.15s;
-  gap: 12px;
+}
+.reader-article-btn:hover {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg) 85%);
+  border-color: var(--accent-stroke);
+}
+.reader-article-thumb {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--border);
+}
+.reader-article-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.reader-article-title {
+  font-size: 0.92rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.reader-article-date {
+  font-size: 0.75rem;
+  opacity: 0.55;
 }
 .reader-article-btn:hover {
   background: var(--card-bg);
@@ -1363,10 +1391,10 @@ td.jlpt-cell { white-space: nowrap; }
 }
 .modal-overlay.open { display: flex; }
 .modal-box {
-  background: var(--card-bg);
-  border: 1.5px solid var(--card-stroke);
-  border-radius: var(--radius-box, 12px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  background: var(--bg);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-box, 18px);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.32), 0 0 0 1px var(--border-strong);
   width: 100%;
   max-width: 440px;
   margin: 16px;
