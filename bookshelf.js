@@ -178,7 +178,7 @@ function renderVocabTable(entry) {
     const wkCell = hasWk
       ? (w.wk_level != null
           ? `<td class="wk-cell"><span class="wk-badge-sm">L${w.wk_level}</span></td>`
-          : '<td class="wk-cell">—</td>')
+          : '<td class="wk-cell"><span title="Not in WaniKani curriculum">—</span></td>')
       : '';
     return `<tr>
       <td class="kanji-cell">${shelfEsc(w.word)}</td>
@@ -190,7 +190,7 @@ function renderVocabTable(entry) {
     </tr>`;
   }).join('');
 
-  const wkHeader = hasWk ? '<th>WK</th>' : '';
+  const wkHeader = hasWk ? '<th title="WaniKani level — shown only for words in WK curriculum">WK</th>' : '';
   return `<table class="words-table">
     <thead><tr><th>Word</th><th>Reading</th><th>Meaning</th><th>JLPT</th>${wkHeader}<th></th></tr></thead>
     <tbody>${rows}</tbody>
