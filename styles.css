@@ -39,23 +39,23 @@
   --fc-back-ink: var(--bg);
 }
 
-/* Theme 2 — Joyful */
+/* Theme 2 — Matcha */
 :root[data-theme="joyful"] {
-  --bg:             #FFF0F7;
-  --accent:         #FFB8D9;
-  --accent-2:       #7AAF00;
-  --ink:            #2A2020;
+  --bg:             #F2F4E8;
+  --accent:         #C8D8A2;
+  --accent-2:       #8FA65A;
+  --ink:            #252D18;
   --muted:          color-mix(in srgb, var(--ink) 52%, transparent);
 
-  --border:         rgba(42,32,32,0.18);
-  --border-strong:  rgba(42,32,32,0.32);
-  --accent-stroke:  rgba(255,140,185,0.9);
-  --accent2-stroke: rgba(122,175,0,0.85);
+  --border:         rgba(37,45,24,0.18);
+  --border-strong:  rgba(37,45,24,0.32);
+  --accent-stroke:  rgba(100,138,48,0.9);
+  --accent2-stroke: rgba(143,166,90,0.85);
 
-  --ring: 0 0 0 3px rgba(255,184,217,0.45);
+  --ring: 0 0 0 3px rgba(200,216,162,0.5);
 
-  --fc-back-bg:  #2A2020;
-  --fc-back-ink: #FFF0F7;
+  --fc-back-bg:  #252D18;
+  --fc-back-ink: #F2F4E8;
 }
 
 /* Theme 3 — Plum */
@@ -356,9 +356,11 @@ canvas {
 /* Writing canvases get fixed height, width capped by container */
 #writing-canvas-1,
 #writing-canvas-2 {
+  display: block;
   width: 100% !important;
   max-width: 100% !important;
   height: 300px !important;
+  box-sizing: border-box;
 }
 #writing-canvas-1, #writing-canvas-2 {
   pointer-events: auto !important;
@@ -609,11 +611,12 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 
 /* ── Handwriting panel ───────────────────────────── */
 .writing-layout           { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.writing-layout > * { min-width: 0; overflow: hidden; }
 .writing-layout.writing-two { grid-template-columns: 1fr 1fr; }
 @media (max-width: 980px) { .writing-layout.writing-two { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .writing-layout { grid-template-columns: 1fr; } }
 
-.canvas-wrap     { display: flex; flex-direction: column; gap: 12px; }
+.canvas-wrap     { display: flex; flex-direction: column; gap: 12px; overflow: hidden; min-width: 0; }
 .canvas-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .brush-row       { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--muted); }
 .hw-build        { grid-column: 1 / -1; }
@@ -647,6 +650,7 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
   gap: 24px;
   align-items: start;
 }
+.radical-layout > * { min-width: 0; overflow: hidden; }
 .radical-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
@@ -763,7 +767,9 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 .fc-book-opt.selected { border-color: var(--accent-stroke); color: var(--accent-stroke); }
 
 .fc-options { display: flex; flex-direction: column; gap: 12px; }
-.fc-option-row { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; }
+.fc-option-row { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; margin-bottom: 12px; }
+.fc-option-row label { min-width: 80px; color: var(--muted); flex-shrink: 0; }
+.fc-option-row select, .fc-option-row .fc-book-grid { flex: 1; }
 .fc-option-row label  { min-width: 130px; color: var(--muted); }
 .fc-option-row select { font-size: 0.88rem; }
 
@@ -1294,16 +1300,13 @@ td.jlpt-cell { white-space: nowrap; }
   .shelf-layout    { grid-template-columns: 1fr; gap: 12px; }
   .shelf-add-bar   { flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
   .shelf-add-bar input { width: 100%; min-width: 0 !important; }
-  .shelf-sidebar   { max-height: 220px; overflow-y: auto; }
+  .shelf-sidebar   { border: none; border-radius: 0; max-height: none; overflow: visible; padding: 0; }
   .shelf-detail    { min-height: 0; }
 
   /* ── Handwriting canvases ───────────────────────────── */
   .writing-layout,
   .writing-layout.writing-two { grid-template-columns: 1fr; gap: 12px; }
-  .canvas-wrap canvas {
-    width:  100% !important;
-    height: 240px !important;
-  }
+  /* canvas sizing handled by #writing-canvas-1/2 rule */
   .brush-row { gap: 6px; }
   .brush-row input[type="range"] { width: 90px; }
   .candidate-row  { gap: 5px; flex-wrap: wrap; }

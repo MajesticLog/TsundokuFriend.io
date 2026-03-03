@@ -25,12 +25,14 @@ function hwNowMs() { return Math.round(performance.now()); }
 /* ── Resize a single canvas to fill its CSS layout box ── */
 function hwResizeCanvas(canvas) {
   if (!canvas) return;
-  // Let CSS control the visual width (width:100%).
-  // We only set the resolution attributes to match actual display pixels.
-  // Remove any inline style so CSS takes over.
+  // CSS controls visual size via width:100%. 
+  // We read the rendered width using getBoundingClientRect (accurate even on retina).
+  // Setting canvas.width/height resets the drawing buffer to match display size.
   canvas.style.removeProperty('width');
   canvas.style.removeProperty('height');
-  const w = canvas.offsetWidth || 300;
+  // getBoundingClientRect gives the true CSS-rendered width
+  const rect = canvas.getBoundingClientRect();
+  const w = Math.round(rect.width) || canvas.parentElement?.clientWidth || 300;
   const h = 300;
   if (canvas.width === w && canvas.height === h) return;
   canvas.width  = w;
