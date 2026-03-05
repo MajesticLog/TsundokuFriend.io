@@ -10,9 +10,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
 <link rel="icon" type="image/svg+xml" href="plumheart.svg"/>
   <link href="styles.css" rel="stylesheet"/>
-
-
-  
 </head>
 <body>
 <header class="topbar">
@@ -56,9 +53,9 @@
 
 <!-- ── HANDWRITE PANEL ── -->
 <div class="panel" id="panel-writing">
-<div class="writing-layout writing-two">
+<div class="writing-layout writing-one">
 <div class="card canvas-wrap">
-<h2>Handwrite Kanji — 手書き検索 (1)</h2>
+<h2>Handwrite Kanji — 手書き検索</h2>
 <canvas height="350" id="writing-canvas-1" width="300"></canvas>
 <div class="canvas-controls">
 <div class="brush-row">
@@ -71,18 +68,7 @@
 <div class="candidate-row" id="hw-candidates-1"></div>
 <p class="status-msg" id="hw-status-1">Draw a kanji — suggestions appear automatically.</p>
 </div>
-<div class="card canvas-wrap">
-<h2>Handwrite Kanji — 手書き検索 (2)</h2>
-<canvas height="350" id="writing-canvas-2" width="300"></canvas>
-<div class="canvas-controls">
-<div class="brush-row">
-<!-- brush size shared with canvas 1 -->
-</div>
-<button class="btn btn-sm btn-outline" onclick="hwClear(2)">Clear</button>
-</div>
-<div class="candidate-row" id="hw-candidates-2"></div>
-<p class="status-msg" id="hw-status-2">You can write a second kanji to build multi-kanji words.</p>
-</div>
+
 <div class="card hw-build">
 <h2>Build Word — 組み合わせ</h2>
 <p class="radical-info">Click a candidate above to add it. You can edit the field manually too.</p>

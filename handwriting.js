@@ -335,6 +335,7 @@ function hwSearchWord() {
   if (!q) return;
   const inp = document.getElementById('search-input');
   if (inp) inp.value = q;
+  hwClearQuery();
   if (typeof showPanel === 'function') showPanel('lookup');
   if (typeof lookupWord === 'function') lookupWord();
 }
@@ -359,6 +360,7 @@ function renderMiniEntries(entries, containerEl) {
     row.onclick = () => {
       const inp = document.getElementById('search-input');
       if (inp) inp.value = word;
+      hwClearQuery();
       if (typeof showPanel  === 'function') showPanel('lookup', document.querySelector('nav button'));
       if (typeof lookupWord === 'function') lookupWord();
     };
