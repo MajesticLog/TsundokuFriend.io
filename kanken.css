@@ -1,0 +1,527 @@
+
+
+/* ═══════════════════════════════════════════════════
+   KANKEN — 漢字検定 Panel
+═══════════════════════════════════════════════════ */
+
+/* ── Layout ─────────────────────────────────────── */
+#panel-kanken {
+  max-width: 680px;
+  margin: 0 auto;
+}
+#panel-kanken h2 {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: var(--stroke) solid var(--border);
+}
+
+/* ── Setup ──────────────────────────────────────── */
+.kk-setup-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.kk-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.kk-level-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.kk-level-row .kk-label { margin-bottom: 0; white-space: nowrap; }
+
+.kk-select {
+  padding: 8px 14px;
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  min-width: 120px;
+}
+.kk-select:focus { outline: none; box-shadow: var(--ring) !important; }
+
+/* Section grid */
+.kk-section-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kk-section-btn {
+  padding: 10px 18px;
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.kk-section-btn:hover { opacity: 1; }
+.kk-section-btn.active {
+  opacity: 1;
+  border-color: var(--accent-stroke);
+  color: var(--accent-stroke);
+  background: color-mix(in srgb, var(--accent-stroke) 8%, transparent);
+}
+
+.kk-section-jp {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1rem;
+}
+
+.kk-start-btn {
+  align-self: flex-start;
+  padding: 12px 28px;
+  font-size: 1rem;
+}
+
+.kk-hint {
+  margin: 0;
+  opacity: 0.6;
+}
+
+/* ── Quiz ───────────────────────────────────────── */
+#kk-quiz { display: none; }
+#kk-quiz.active { display: block; }
+
+.kk-quiz-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Progress bar */
+.kk-progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.kk-progress-fill {
+  height: 100%;
+  background: var(--accent-stroke);
+  border-radius: 99px;
+  transition: width 300ms ease;
+}
+
+/* Counter + score */
+.kk-counter {
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kk-score-inline { display: flex; gap: 10px; margin-left: auto; }
+.kk-correct-count { color: var(--accent2-stroke); font-weight: 600; }
+.kk-wrong-count   { color: var(--accent-stroke);  font-weight: 600; opacity: 0.8; }
+
+/* Section tag */
+.kk-section-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+/* Question card */
+.kk-question-card {
+  border: var(--stroke) solid var(--border);
+  border-radius: var(--radius-box);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  min-height: 280px;
+  justify-content: center;
+  animation: panelIn 160ms ease both;
+}
+
+.kk-q-prompt {
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.kk-q-kanji {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 4.5rem;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.kk-q-sub {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1.4rem;
+  opacity: 0.7;
+}
+
+.kk-q-loading {
+  font-size: 0.82rem;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Answer area */
+.kk-answer-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Reveal button */
+.kk-reveal-btn {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+}
+
+/* Reveal content */
+.kk-reveal-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: panelIn 160ms ease both;
+}
+
+/* Readings group */
+.kk-readings-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.kk-reading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.kk-read-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  min-width: 16px;
+}
+
+.kk-read-chip {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1rem;
+  padding: 4px 12px;
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  line-height: 1.4;
+}
+
+/* Kaki (writing) answer */
+.kk-kaki-answer {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 3.5rem;
+  line-height: 1.2;
+  color: var(--accent-stroke);
+}
+
+/* Bushu answer */
+.kk-bushu-answer {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 3rem;
+  color: var(--accent-stroke);
+}
+
+/* Okurigana answer */
+.kk-okurigana-answer {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 2.4rem;
+}
+.kk-okuri-part {
+  color: var(--accent-stroke);
+  border-bottom: 2px solid var(--accent-stroke);
+}
+
+/* Yoji answer */
+.kk-yoji-answer {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 2.4rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-stroke);
+}
+.kk-yoji-reading {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1rem;
+  color: var(--muted);
+}
+.kk-yoji-meaning {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* Self-check row */
+.kk-self-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding-top: 4px;
+}
+.kk-correct-btn {
+  border-color: var(--accent2-stroke) !important;
+  color: var(--accent2-stroke) !important;
+}
+.kk-correct-btn:hover {
+  background: color-mix(in srgb, var(--accent2-stroke) 10%, transparent) !important;
+}
+.kk-wrong-btn {
+  border-color: color-mix(in srgb, var(--accent-stroke) 70%, var(--ink)) !important;
+  color: color-mix(in srgb, var(--accent-stroke) 70%, var(--ink)) !important;
+}
+.kk-wrong-btn:hover {
+  background: color-mix(in srgb, var(--accent-stroke) 10%, transparent) !important;
+}
+
+/* Multiple choice (kakusuu) */
+.kk-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.kk-choice-btn {
+  min-width: 70px;
+  padding: 12px 20px;
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1.1rem;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+.kk-choice-btn:hover:not(:disabled) {
+  border-color: var(--accent-stroke);
+  color: var(--accent-stroke);
+}
+.kk-choice-correct {
+  border-color: var(--accent2-stroke) !important;
+  color: var(--accent2-stroke) !important;
+  background: color-mix(in srgb, var(--accent2-stroke) 10%, transparent) !important;
+}
+.kk-choice-wrong {
+  border-color: var(--accent-stroke) !important;
+  color: var(--accent-stroke) !important;
+  background: color-mix(in srgb, var(--accent-stroke) 8%, transparent) !important;
+}
+
+/* ── Results ────────────────────────────────────── */
+.kk-results-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  animation: panelIn 200ms ease both;
+}
+
+.kk-results-grade {
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 8px 24px;
+  border-radius: var(--radius-pill);
+  border: var(--stroke-strong) solid;
+}
+.kk-pass  { border-color: var(--accent2-stroke); color: var(--accent2-stroke); }
+.kk-near  { border-color: color-mix(in srgb, var(--accent-stroke) 60%, var(--accent2-stroke)); 
+             color: color-mix(in srgb, var(--accent-stroke) 60%, var(--accent2-stroke)); }
+.kk-fail  { border-color: var(--accent-stroke); color: var(--accent-stroke); }
+
+.kk-results-score {
+  font-size: 3.5rem;
+  font-weight: 600;
+  line-height: 1;
+  font-family: 'Funnel Display', sans-serif;
+}
+.kk-results-denom {
+  font-size: 1.6rem;
+  opacity: 0.5;
+}
+.kk-results-pct {
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+.kk-results-detail {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+}
+
+/* Wrong items */
+.kk-wrong-list {
+  width: 100%;
+  max-width: 400px;
+  padding: 16px;
+  border: var(--stroke) solid var(--border);
+  border-radius: var(--radius-box);
+  margin-top: 8px;
+}
+.kk-wrong-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.kk-wrong-chip {
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1.1rem;
+  padding: 4px 12px;
+  border: var(--stroke) solid var(--accent-stroke);
+  color: var(--accent-stroke);
+  border-radius: var(--radius-pill);
+}
+
+.kk-results-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .kk-q-kanji { font-size: 3.5rem; }
+  .kk-question-card { padding: 20px 16px; min-height: 240px; }
+  .kk-results-score { font-size: 2.8rem; }
+}
+
+/* ── Type input (読み / 送り仮名 / 対義語) ────────── */
+.kk-type-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.kk-type-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: var(--stroke-strong) solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Kosugi Maru', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+.kk-type-input:focus {
+  border-color: var(--accent-stroke);
+  box-shadow: var(--ring) !important;
+}
+.kk-type-input:disabled {
+  opacity: 0.55;
+}
+
+.kk-submit-btn {
+  white-space: nowrap;
+  padding: 10px 18px;
+}
+
+/* ── Feedback ───────────────────────────────────── */
+.kk-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  min-height: 28px;
+  animation: panelIn 150ms ease both;
+}
+.kk-fb-correct {
+  color: var(--accent2-stroke);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.kk-fb-wrong {
+  color: var(--accent-stroke);
+  font-weight: 600;
+  font-size: 1rem;
+}
+.kk-fb-hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ── 書き canvas ──────────────────────────────── */
+.kk-kaki-canvas-wrap {
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  display: inline-block;
+  line-height: 0;
+}
+.kk-canvas {
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+  background: transparent;
+  width: 220px;
+  height: 220px;
+}
+.kk-kaki-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Attempt dots */
+.kk-attempt-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+}
+.kk-dot { color: var(--border-strong); transition: color 200ms ease; }
+.kk-dot.active { color: var(--accent-stroke); }
+.kk-dot.used   { color: color-mix(in srgb, var(--accent-stroke) 40%, transparent); }
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width: 640px) {
+  .kk-type-row { max-width: 100%; }
+  .kk-canvas { width: 180px; height: 180px; }
+  .kk-kaki-canvas-wrap canvas { width: 180px !important; height: 180px !important; }
+}
