@@ -1,3 +1,5 @@
+
+
 /* ═══════════════════════════════════════════════════
    KANKEN — 漢字検定 Panel
 ═══════════════════════════════════════════════════ */
@@ -535,4 +537,70 @@
   .kk-type-row { max-width: 100%; }
   .kk-canvas { width: 180px; height: 180px; }
   .kk-kaki-canvas-wrap canvas { width: 180px !important; height: 180px !important; }
+}
+
+/* ── Quit button + top row ───────────────────────── */
+.kk-quiz-toprow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kk-quiz-toprow .kk-progress-bar {
+  flex: 1;
+}
+.kk-quit-btn {
+  flex-shrink: 0;
+  background: none;
+  border: var(--stroke) solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--muted);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+  line-height: 1;
+}
+.kk-quit-btn:hover {
+  color: var(--accent-stroke);
+  border-color: var(--accent-stroke);
+}
+
+/* ── 画数 KanjiVG layout ──────────────────────────── */
+.kk-kakusuu-svg-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 8px;
+}
+.kk-kakusuu-svg-el {
+  color: var(--ink);
+  display: block;
+}
+.kk-kakusuu-hint {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* ── 書き: more breathing room ───────────────────── */
+.kk-kaki-meaning {
+  margin-bottom: 14px !important;
+  opacity: 0.6;
+  font-size: 0.88rem;
+}
+.kk-kaki-canvas-wrap {
+  margin-bottom: 14px;
+}
+.kk-kaki-controls {
+  margin-bottom: 14px;
+}
+
+/* ── Choice button feedback (correct/wrong) ──────── */
+.kk-choice-btn.kk-choice-correct {
+  border-color: var(--accent2-stroke) !important;
+  color: var(--accent2-stroke) !important;
+  background: color-mix(in srgb, var(--accent2-stroke) 10%, transparent) !important;
+}
+.kk-choice-btn.kk-choice-wrong {
+  border-color: var(--accent-stroke) !important;
+  color: var(--accent-stroke) !important;
+  background: color-mix(in srgb, var(--accent-stroke) 10%, transparent) !important;
 }
