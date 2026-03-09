@@ -395,12 +395,12 @@
 
   <!-- ── SOURCES MODAL ── -->
   <div class="modal-overlay" id="sources-modal">
-    <div class="modal-box" style="max-width:500px">
-      <div class="modal-header">
+    <div class="modal-box" style="max-width:500px;max-height:90vh;display:flex;flex-direction:column">
+      <div class="modal-header" style="flex-shrink:0">
         <h3>Sources &amp; Credits</h3>
         <button class="modal-close" onclick="document.getElementById('sources-modal').classList.remove('open')">✕</button>
       </div>
-      <div style="padding:16px 20px 24px;font-size:0.85rem;line-height:1.9">
+      <div style="padding:16px 20px 24px;font-size:0.85rem;line-height:1.9;overflow-y:auto;flex:1">
 
         <p style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.5;margin:0 0 8px">Radicals</p>
         <p style="margin:0 0 16px">
