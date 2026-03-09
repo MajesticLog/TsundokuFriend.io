@@ -34,7 +34,7 @@
 <button onclick="showPanel('radicals', this)">部首 Radicals</button>
 <button onclick="showPanel('flashcards', this)">🃏 Flashcards</button>
 <button onclick="showPanel('reader', this)">📰 Reader</button>
-<button onclick="showPanel('kanken', this)">🈶 漢検</button>
+<button onclick="showPanel('kanken', this)">🏆 漢検</button>
 </nav></div>
 <main>
 <!-- ── LOOKUP PANEL ── -->
@@ -314,7 +314,10 @@
 
 <!-- ── KANKEN PANEL ── -->
 <div class="panel" id="panel-kanken">
-  <div id="kk-root"></div>
+  <div id="kk-root">
+    <div id="kk-setup"></div>
+    <div id="kk-quiz"></div>
+  </div>
 </div>
 </main>
 <script defer="" src="state.js"></script>
