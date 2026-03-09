@@ -603,3 +603,36 @@
   color: var(--accent-stroke) !important;
   background: color-mix(in srgb, var(--accent-stroke) 10%, transparent) !important;
 }
+
+/* ── Session size picker ─────────────────────────── */
+.kk-count-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kk-count-label {
+  white-space: nowrap;
+}
+.kk-count-btns {
+  display: flex;
+  gap: 6px;
+}
+.kk-count-btn {
+  padding: 6px 16px;
+  border: var(--stroke) solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms, background 120ms;
+}
+.kk-count-btn:hover {
+  border-color: var(--accent-stroke);
+  color: var(--accent-stroke);
+}
+.kk-count-btn.active {
+  border-color: var(--accent-stroke);
+  color: var(--accent-stroke);
+  background: color-mix(in srgb, var(--accent-stroke) 10%, transparent);
+}
