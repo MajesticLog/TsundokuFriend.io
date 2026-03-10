@@ -683,11 +683,14 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 }
 
 /* ── Radicals panel ──────────────────────────────── */
+#panel-radicals { overflow: visible; }
 .radical-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 24px;
   align-items: start;
+  max-width: 960px;
+  margin: 0 auto;
 }
 .radical-layout > * { min-width: 0; overflow: hidden; }
 .radical-grid {
