@@ -686,10 +686,10 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 #panel-radicals { overflow: visible; }
 .radical-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
   align-items: start;
-  max-width: 960px;
+  max-width: 720px;
   margin: 0 auto;
 }
 .radical-layout > * { min-width: 0; overflow: hidden; }
@@ -711,9 +711,6 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
 }
 @media (max-width: 900px) {
   /* Tablet and below: picker on top, build word below */
-  .radical-layout {
-    grid-template-columns: 1fr;
-  }
   .radical-grid {
     max-height: none;
     grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
