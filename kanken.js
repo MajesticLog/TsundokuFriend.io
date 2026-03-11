@@ -9,6 +9,7 @@ const kk = {
   score:{correct:0,wrong:0}, current:null, answered:false,
   wrongItems:[], kakiAttempts:0,
   levels:null, yoji:null, kanjiCache:{}, levelPool:[],
+  pending:[], sessionTotal:0, sessionSize:20,
 };
 
 /* ── Level / section metadata ──────────────────────── */
@@ -116,7 +117,7 @@ function kkShuffle(arr) {
 const kkEsc = s => s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
 /* ── Queue builders ────────────────────────────────── */
-async function kkBuildQueue(level, section) {
+async function kkBuildQueue(level, section, count=20) {
   const levels=await kkLoadLevels();
   if (!levels) return null;
   const levelOrder=['10','9','8','7','6','5','4','3','j2','2','j1'];
@@ -133,7 +134,7 @@ async function kkBuildQueue(level, section) {
     let yojiPool=[];
     for (let i=0;i<=yojiIdx;i++) { const arr=yojiData[yojiLevels[i]]; if (arr) yojiPool=yojiPool.concat(arr); }
     kk._yojiPool=yojiPool;
-    return kkShuffle(yojiPool).slice(0,20).map(item=>({type:'yoji',...item}));
+    return kkShuffle(yojiPool).slice(0,count).map(item=>({type:'yoji',...item}));
   }
 
   // For bushu/okurigana: actual pre-fetch so we only queue kanji with valid data.
@@ -210,6 +211,8 @@ function kkChangeLevel(val) { kk.level=val; kk.section=null; kkRenderSetup(); }
 // FIX 3: auto-start immediately on section select
 function kkSelectSection(s) { kk.section=s; kkStartQuiz(); }
 
+function kkSetSize(n) { kk.sessionSize=n; kkRenderSetup(); }
+
 /* ── Quiz start ────────────────────────────────────── */
 async function kkStartQuiz() {
   const setupEl=document.getElementById('kk-setup');
@@ -218,11 +221,13 @@ async function kkStartQuiz() {
   setupEl.style.display='none';
   quizEl.classList.add('active');
   quizEl.innerHTML=`<p class="status-msg" style="padding:32px;text-align:center">問題を準備中…</p>`;
-  const queue=await kkBuildQueue(kk.level,kk.section);
+  const queue=await kkBuildQueue(kk.level,kk.section,kk.sessionSize);
   if (!queue||!queue.length) {
     quizEl.innerHTML=`<p class="status-msg" style="padding:32px;text-align:center">データを読み込めませんでした。ページをリロードしてください。</p>`;
     return;
   }
+  kk.pending=[...queue];
+  kk.sessionTotal=queue.length;
   Object.assign(kk,{queue,idx:0,score:{correct:0,wrong:0},wrongItems:[],answered:false,current:null,kakiAttempts:0});
   kkRenderQuestion();
 }
