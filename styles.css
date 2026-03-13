@@ -917,6 +917,32 @@ button:focus-visible, .btn:focus-visible { outline: none; box-shadow: var(--ring
   margin-top: 12px;
 }
 
+/* ── Flashcard source toggle ─────────────────────── */
+.fc-source-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+.fc-source-btn {
+  padding: 6px 14px;
+  border: var(--stroke) solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: border-color 120ms, color 120ms;
+}
+.fc-source-btn:hover {
+  border-color: var(--accent-stroke);
+}
+.fc-source-btn.selected {
+  border-color: var(--accent-stroke);
+  color: var(--accent-stroke);
+}
+
 /* Rating buttons — intentional fills (semantic colour coding) */
 .fc-ratings {
   display: none;
