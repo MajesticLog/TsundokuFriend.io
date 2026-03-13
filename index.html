@@ -188,11 +188,19 @@
 <div class="card">
 <h2>Study Session — 勉強</h2>
 <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;font-style:italic">
-          Choose which book(s) to study, then configure your session.
-        </p>
-<div class="fc-option-row" style="align-items:flex-start">
-<label>Books</label>
-<div class="fc-book-grid" id="fc-book-grid" style="margin-bottom:0"></div>
+  Choose a source, pick what to study, then configure your session.
+</p>
+<div class="fc-option-row">
+  <label>Source</label>
+  <div class="fc-source-row">
+    <button class="fc-source-btn selected" data-source="book" onclick="fcSetSource('book')">📖 By Book</button>
+    <button class="fc-source-btn" data-source="jlpt" onclick="fcSetSource('jlpt')">🏷 By JLPT</button>
+    <button class="fc-source-btn" data-source="wk" onclick="fcSetSource('wk')">🟣 By WK Level</button>
+  </div>
+</div>
+<div class="fc-option-row" id="fc-source-row" style="align-items:flex-start">
+  <label>Books</label>
+  <div class="fc-book-grid" id="fc-book-grid" style="margin-bottom:0"></div>
 </div>
 <div class="fc-options">
 <div class="fc-option-row">
@@ -209,6 +217,10 @@
 <option value="random">Random</option>
 <option value="sequential">Sequential</option>
 <option value="hard-first">Hard first</option>
+  <option value="jlpt-asc">JLPT N5 → N1</option>
+  <option value="jlpt-desc">JLPT N1 → N5</option>
+  <option value="wk-asc">WK level ↑</option>
+  <option value="wk-desc">WK level ↓</option>
 </select>
 </div>
 <div class="fc-option-row">
