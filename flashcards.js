@@ -1,6 +1,7 @@
 /* =========================
    FLASHCARDS
    Reads from tsundoku-shelf (Books tab) — each entry has a vocab[] array.
+   Supports study by book, JLPT level, or WK level.
 ========================= */
 
 let fc = {
@@ -8,6 +9,8 @@ let fc = {
   mode: 'kanji-to-meaning',
   stats: { again: 0, hard: 0, good: 0, easy: 0 },
   againWords: [], selectedBooks: new Set(),
+  source: 'book',          // 'book' | 'jlpt' | 'wk'
+  selectedLevels: new Set(),
 };
 
 function _shelf() {
@@ -15,9 +18,55 @@ function _shelf() {
   catch(_) { return []; }
 }
 
+/* ── All vocab across shelf ─────────────────────── */
+function _allVocab() {
+  return _shelf().flatMap(e => (e.vocab || []).map(w => ({ ...w, bookId: e.id, bookTitle: e.title })));
+}
+
+/* ── Parse JLPT level to sortable number ─────────── */
+function _jlptNum(jlpt) {
+  if (!jlpt) return 99;
+  const m = String(jlpt).match(/n?(\d)/i);
+  return m ? +m[1] : 99;
+}
+
+/* ── Setup panel ─────────────────────────────────── */
 function showFlashcardsSetup() {
-  const grid  = document.getElementById('fc-book-grid');
+  const grid = document.getElementById('fc-book-grid');
   if (!grid) return;
+
+  // Render source selector state
+  _updateSourceUI();
+
+  if (fc.source === 'book') {
+    _renderBookPicker(grid);
+  } else if (fc.source === 'jlpt') {
+    _renderJlptPicker(grid);
+  } else if (fc.source === 'wk') {
+    _renderWkPicker(grid);
+  }
+}
+
+function _updateSourceUI() {
+  document.querySelectorAll('.fc-source-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.source === fc.source);
+  });
+  // Update the label next to the picker
+  const label = document.querySelector('#fc-source-row > label');
+  if (label) {
+    const labels = { book: 'Books', jlpt: 'JLPT Level', wk: 'WK Level' };
+    label.textContent = labels[fc.source] || 'Books';
+  }
+}
+
+function fcSetSource(source) {
+  fc.source = source;
+  fc.selectedBooks.clear();
+  fc.selectedLevels.clear();
+  showFlashcardsSetup();
+}
+
+function _renderBookPicker(grid) {
   const shelf = _shelf().filter(e => e.vocab?.length > 0);
   if (!shelf.length) {
     grid.innerHTML = '<p class="status-msg">No vocab yet — look up words and add them to a book first.</p>';
@@ -36,22 +85,168 @@ function showFlashcardsSetup() {
   });
 }
 
+function _renderJlptPicker(grid) {
+  const all = _allVocab();
+  // Count words per JLPT level
+  const counts = {};
+  all.forEach(w => {
+    const lvl = _jlptTag(w.jlpt);
+    if (lvl) counts[lvl] = (counts[lvl] || 0) + 1;
+  });
+  const noLevel = all.filter(w => !_jlptTag(w.jlpt)).length;
+
+  const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
+  if (!Object.keys(counts).length && !noLevel) {
+    grid.innerHTML = '<p class="status-msg">No words with JLPT tags found. Tags are added automatically from Jisho lookups.</p>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  levels.forEach(lvl => {
+    const c = counts[lvl] || 0;
+    if (!c) return;
+    const btn = document.createElement('button');
+    btn.className = 'fc-book-opt' + (fc.selectedLevels.has(lvl) ? ' selected' : '');
+    btn.innerHTML = `<span style="font-family:'Funnel Display',sans-serif;font-weight:500">${lvl}</span> <span style="font-size:0.75rem;opacity:0.6">(${c})</span>`;
+    btn.onclick = () => {
+      fc.selectedLevels.has(lvl) ? fc.selectedLevels.delete(lvl) : fc.selectedLevels.add(lvl);
+      btn.classList.toggle('selected');
+    };
+    grid.appendChild(btn);
+  });
+
+  if (noLevel) {
+    const btn = document.createElement('button');
+    btn.className = 'fc-book-opt' + (fc.selectedLevels.has('none') ? ' selected' : '');
+    btn.innerHTML = `No tag <span style="font-size:0.75rem;opacity:0.6">(${noLevel})</span>`;
+    btn.onclick = () => {
+      fc.selectedLevels.has('none') ? fc.selectedLevels.delete('none') : fc.selectedLevels.add('none');
+      btn.classList.toggle('selected');
+    };
+    grid.appendChild(btn);
+  }
+}
+
+function _renderWkPicker(grid) {
+  const all = _allVocab();
+  // Group by WK level ranges
+  const ranges = [
+    { label: '1–10', min: 1, max: 10 },
+    { label: '11–20', min: 11, max: 20 },
+    { label: '21–30', min: 21, max: 30 },
+    { label: '31–40', min: 31, max: 40 },
+    { label: '41–50', min: 41, max: 50 },
+    { label: '51–60', min: 51, max: 60 },
+  ];
+
+  const wkWords = all.filter(w => w.wk_level != null);
+  const noWk = all.filter(w => w.wk_level == null).length;
+
+  if (!wkWords.length && !noWk) {
+    grid.innerHTML = '<p class="status-msg">No words with WK levels found. Connect WaniKani in settings to add level data.</p>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  ranges.forEach(r => {
+    const c = wkWords.filter(w => w.wk_level >= r.min && w.wk_level <= r.max).length;
+    if (!c) return;
+    const key = `wk${r.min}-${r.max}`;
+    const btn = document.createElement('button');
+    btn.className = 'fc-book-opt' + (fc.selectedLevels.has(key) ? ' selected' : '');
+    btn.innerHTML = `<span style="font-family:'Funnel Display',sans-serif;font-weight:500">WK ${r.label}</span> <span style="font-size:0.75rem;opacity:0.6">(${c})</span>`;
+    btn.onclick = () => {
+      fc.selectedLevels.has(key) ? fc.selectedLevels.delete(key) : fc.selectedLevels.add(key);
+      btn.classList.toggle('selected');
+    };
+    grid.appendChild(btn);
+  });
+
+  if (noWk) {
+    const btn = document.createElement('button');
+    btn.className = 'fc-book-opt' + (fc.selectedLevels.has('no-wk') ? ' selected' : '');
+    btn.innerHTML = `No WK <span style="font-size:0.75rem;opacity:0.6">(${noWk})</span>`;
+    btn.onclick = () => {
+      fc.selectedLevels.has('no-wk') ? fc.selectedLevels.delete('no-wk') : fc.selectedLevels.add('no-wk');
+      btn.classList.toggle('selected');
+    };
+    grid.appendChild(btn);
+  }
+}
+
+/* ── Helpers ──────────────────────────────────────── */
+function _jlptTag(jlpt) {
+  if (!jlpt) return null;
+  const s = String(jlpt).toUpperCase();
+  const m = s.match(/N(\d)/);
+  return m ? 'N' + m[1] : null;
+}
+
+/* ── Start session ───────────────────────────────── */
 function startFlashcards() {
-  const shelf   = _shelf().filter(e => e.vocab?.length > 0);
-  const toStudy = fc.selectedBooks.size ? shelf.filter(e => fc.selectedBooks.has(e.id)) : shelf;
+  let words = [];
 
-  let words = toStudy.flatMap(e => e.vocab.map(w => ({ ...w, bookId: e.id })));
-  if (!words.length) { alert('No words yet — add vocab from the Lookup tab.'); return; }
+  if (fc.source === 'book') {
+    const shelf  = _shelf().filter(e => e.vocab?.length > 0);
+    const toStudy = fc.selectedBooks.size ? shelf.filter(e => fc.selectedBooks.has(e.id)) : shelf;
+    words = toStudy.flatMap(e => e.vocab.map(w => ({ ...w, bookId: e.id })));
+  } else if (fc.source === 'jlpt') {
+    const all = _allVocab();
+    if (fc.selectedLevels.size) {
+      words = all.filter(w => {
+        const tag = _jlptTag(w.jlpt);
+        if (tag && fc.selectedLevels.has(tag)) return true;
+        if (!tag && fc.selectedLevels.has('none')) return true;
+        return false;
+      });
+    } else {
+      words = all.filter(w => _jlptTag(w.jlpt)); // all tagged words
+    }
+  } else if (fc.source === 'wk') {
+    const all = _allVocab();
+    if (fc.selectedLevels.size) {
+      words = all.filter(w => {
+        if (w.wk_level != null) {
+          for (const key of fc.selectedLevels) {
+            const m = key.match(/^wk(\d+)-(\d+)$/);
+            if (m && w.wk_level >= +m[1] && w.wk_level <= +m[2]) return true;
+          }
+        }
+        if (w.wk_level == null && fc.selectedLevels.has('no-wk')) return true;
+        return false;
+      });
+    } else {
+      words = all.filter(w => w.wk_level != null); // all WK words
+    }
+  }
 
-  fc.mode = document.getElementById('fc-mode').value;
+  // Deduplicate (same word could appear in multiple books)
+  if (fc.source !== 'book') {
+    const seen = new Set();
+    words = words.filter(w => {
+      const key = w.word + '|' + w.reading;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  if (!words.length) { alert('No words match your selection — try a different filter.'); return; }
+
+  fc.mode  = document.getElementById('fc-mode').value;
   const order = document.getElementById('fc-order').value;
   const limit = parseInt(document.getElementById('fc-limit').value, 10);
 
-  if (order === 'random')    words = words.sort(() => Math.random() - 0.5);
+  if (order === 'random')     words = words.sort(() => Math.random() - 0.5);
   if (order === 'hard-first') {
     const sc = JSON.parse(localStorage.getItem('fc-scores') || '{}');
     words.sort((a,b) => (sc[a.word]?.ease || 2.5) - (sc[b.word]?.ease || 2.5));
   }
+  if (order === 'jlpt-asc')  words.sort((a,b) => _jlptNum(a.jlpt) - _jlptNum(b.jlpt));
+  if (order === 'jlpt-desc') words.sort((a,b) => _jlptNum(b.jlpt) - _jlptNum(a.jlpt));
+  if (order === 'wk-asc')    words.sort((a,b) => (a.wk_level || 999) - (b.wk_level || 999));
+  if (order === 'wk-desc')   words.sort((a,b) => (b.wk_level || 0) - (a.wk_level || 0));
+
   if (limit > 0) words = words.slice(0, limit);
 
   Object.assign(fc, { deck: words, queue: [...words], idx: 0,
@@ -166,3 +361,5 @@ document.addEventListener('keydown', e => {
 function _esc(s) {
   return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+
+window.fcSetSource = fcSetSource;
