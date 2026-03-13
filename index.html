@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
 <link rel="icon" type="image/svg+xml" href="plumheart.svg"/>
   <link href="styles.css" rel="stylesheet"/>
+   <link href="kaiwa.css" rel="stylesheet"/>
   <link href="kanken.css" rel="stylesheet"/>
 </head>
 <body>
@@ -36,6 +37,7 @@
 <button onclick="showPanel('flashcards', this)">🃏 Flashcards</button>
 <button onclick="showPanel('reader', this)">📰 Reader</button>
 <button onclick="showPanel('kanken', this)">🏆 漢検</button>
+  <button onclick="showPanel('kaiwa', this)">💬 会話</button>
 </nav></div>
 <main>
 <!-- ── LOOKUP PANEL ── -->
@@ -334,6 +336,11 @@
 <script defer="" src="reader.js"></script>
 <script defer="" src="kanken.js"></script>
 <script defer="" src="init.js"></script>
+
+  <!-- ── KAIWA PANEL ── -->
+<div class="panel" id="panel-kaiwa">
+  <div id="kw-root"></div>
+</div>
 
 <!-- ── WANIKANI SETTINGS MODAL ── -->
 <div class="modal-overlay" id="wk-modal">
