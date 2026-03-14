@@ -1586,6 +1586,16 @@ td.jlpt-cell { white-space: nowrap; }
 .reader-body ruby rt { font-size: 0.6em; }
 .reader-body p { margin: 0 0 1em; }
 
+.reader-article-desc {
+  font-size: 0.78rem;
+  opacity: 0.5;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ── WaniKani settings modal ────────────────────────────────── */
 .modal-overlay {
   display: none;
