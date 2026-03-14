@@ -198,7 +198,11 @@ async function readerLoadNhkRegular(listEl) {
     for (const article of data.articles) {
       const btn = document.createElement('button');
       btn.className = 'reader-article-btn';
+      const imgHtml = article.img
+        ? `<img class="reader-article-thumb" src="${escapeHtml(article.img)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+        : '';
       btn.innerHTML = `
+        ${imgHtml}
         <span class="reader-article-info">
           <span class="reader-article-title">${escapeHtml(article.title)}</span>
           ${article.date ? `<span class="reader-article-date">${escapeHtml(article.date)}</span>` : ''}
